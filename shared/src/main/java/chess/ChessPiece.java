@@ -132,7 +132,7 @@ public class ChessPiece {
         }
 
         if (pieceType == ChessPiece.PieceType.ROOK) {
-            // Define directional offsets: {rowOffset, columnOffset}
+            // all of the possible shifts i can make
             int[][] directions = {
                     {0, 1},   // Right
                     {0, -1},  // Left
@@ -166,6 +166,87 @@ public class ChessPiece {
                     }
                 }
             }
+        }
+        if (pieceType == ChessPiece.PieceType.BISHOP) {
+            // Define diagonal directional offsets: {rowOffset, columnOffset}
+            int[][] directions = {
+                    {1, 1},   // Up-right
+                    {1, -1},  // Up-left
+                    {-1, 1},  // Down-right
+                    {-1, -1}  // Down-left
+            };
+
+            // Loop through all diagonal directions
+            for (int[] dir : directions) {
+                int rowOffset = dir[0];
+                int colOffset = dir[1];
+                int currentRowTemp = currentRow;
+                int currentColumnTemp = currentColumn;
+
+                // Continue moving diagonally until out of bounds or blocked
+                while (true) {
+                    currentRowTemp += rowOffset;
+                    currentColumnTemp += colOffset;
+
+                    // Check if out of bounds
+                    if (currentRowTemp < 1 || currentRowTemp > 8 || currentColumnTemp < 1 || currentColumnTemp > 8) {
+                        break;
+                    }
+                    ChessPosition curr = new ChessPosition(currentRowTemp, currentColumnTemp);
+                    ChessMove newMove = new ChessMove(myPosition, curr, null);
+
+                    // If there's no piece, the bishop can move
+                    if (board.getPiece(curr) == null) {
+                        moves.add(newMove);
+                    }
+                    // Capture opponent's piece and stop further movement
+                    else if (board.getPiece(curr).getTeamColor() != teamColor) {
+                        moves.add(newMove);
+                        break;
+                    }
+                    // Stop if the path is blocked by a piece of the same color
+                    else {
+                        break;
+                    }
+                }
+            }
+        }
+        if (pieceType == ChessPiece.PieceType.QUEEN) {
+            int[][] directions = {
+                    {0, 1},   // Right
+                    {0, -1},  // Left
+                    {1, 0},   // Down
+                    {-1, 0},   // Up
+                    {1, 1},   // Up-right
+                    {1, -1},  // Up-left
+                    {-1, 1},  // Down-right
+                    {-1, -1} // Down-left
+            };
+            for (int[] dir : directions) {
+                int rowOffset = dir[0];
+                int colOffset = dir[1];
+                int currentRowTemp = currentRow;
+                int currentColumnTemp = currentColumn;
+                while (true) {
+                    currentRowTemp += rowOffset;
+                    currentColumnTemp += colOffset;
+                    // check if it is in bounds
+                    if (currentRowTemp < 1 || currentRowTemp > 8 || currentColumnTemp < 1) {break;}
+                    ChessPosition curr = new ChessPosition(currentRowTemp, currentColumnTemp);
+                    ChessMove newMove = new ChessMove(myPosition, curr, null);
+                    if (board.getPiece(curr) == null) {
+                        moves.add(newMove);
+                    }
+                    else if (board.getPiece(curr).getTeamColor() != teamColor) {
+                        moves.add(newMove);
+                        break;
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+
         }
 
         return moves;
