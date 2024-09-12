@@ -231,7 +231,7 @@ public class ChessPiece {
                     currentRowTemp += rowOffset;
                     currentColumnTemp += colOffset;
                     // check if it is in bounds
-                    if (currentRowTemp < 1 || currentRowTemp > 8 || currentColumnTemp < 1) {break;}
+                    if (currentRowTemp < 1 || currentRowTemp > 8 || currentColumnTemp < 1 || currentColumnTemp > 8) {break;}
                     ChessPosition curr = new ChessPosition(currentRowTemp, currentColumnTemp);
                     ChessMove newMove = new ChessMove(myPosition, curr, null);
                     if (board.getPiece(curr) == null) {
