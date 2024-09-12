@@ -63,6 +63,14 @@ public class ChessPiece {
         System.arraycopy(dir2, 0, combined, dir1.length, dir2.length);
         return combined;
     }
+
+    @Override
+    public String toString() {
+        return  "{" + teamColor +
+                ", " + pieceType +
+                "}";
+    }
+
     /**
      * Calculates all the positions a chess piece can move to
      * Does not take into account moves that are illegal due to leaving the king in
