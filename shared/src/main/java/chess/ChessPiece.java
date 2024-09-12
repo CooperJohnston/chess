@@ -70,67 +70,127 @@ public class ChessPiece {
         int currentColumn = myPosition.getColumn();
         /* better method for PAWN?*/
         if (pieceType == ChessPiece.PieceType.PAWN) {
-            // Determine direction based on the team color
-            int forwardDirection = (teamColor == ChessGame.TeamColor.WHITE) ? 1 : -1;
+            /* I must check that I am able to capture first */
+            if (teamColor == ChessGame.TeamColor.WHITE) {
+                /* code to check the corner */
+                if(currentColumn > 1 && currentColumn < 8 && currentRow > 1 && currentRow < 8 && board.board[currentRow][currentColumn -2] != null && board.board[currentRow][currentColumn -2].getTeamColor() != teamColor) {
 
-            // Regular move (one square forward)
-            ChessPosition forwardOne = new ChessPosition(currentRow + forwardDirection, currentColumn);
-            if (board.getPiece(forwardOne) == null && currentRow + forwardDirection != 8 && currentRow + forwardDirection != 1) {
-                moves.add(new ChessMove(myPosition, forwardOne, null));
-            }
-
-            // Two squares forward (only on starting row)
-            if ((teamColor == ChessGame.TeamColor.WHITE && currentRow == 2) ||
-                    (teamColor == ChessGame.TeamColor.BLACK && currentRow == 7)) {
-                ChessPosition forwardTwo = new ChessPosition(currentRow + 2 * forwardDirection, currentColumn);
-                if (board.getPiece(forwardOne) == null && board.getPiece(forwardTwo) == null) {
-                    moves.add(new ChessMove(myPosition, forwardTwo, null));
-                }
-            }
-
-            // Capture diagonally (two directions: left and right)
-            int[][] diagonals = {
-                    {forwardDirection, -1},  // Diagonal left
-                    {forwardDirection, 1}    // Diagonal right
-            };
-
-            for (int[] diagonal : diagonals) {
-                int diagRow = currentRow + diagonal[0];
-                int diagCol = currentColumn + diagonal[1];
-
-                // Check if in bounds
-                if (diagRow >= 1 && diagRow <= 8 && diagCol >= 1 && diagCol <= 8) {
-                    ChessPosition diagonalPos = new ChessPosition(diagRow, diagCol);
-                    ChessPiece pieceAtDiagonal = board.getPiece(diagonalPos);
-
-                    // Capture an opponent's piece diagonally
-                    if (pieceAtDiagonal != null && pieceAtDiagonal.getTeamColor() != teamColor) {
-                        // Handle promotion if capturing on the last row
-                        if (diagRow == 8 || diagRow == 1) {
-                            for (PieceType pieceType : ChessPiece.PieceType.values()) {
-                                if (pieceType != ChessPiece.PieceType.PAWN && pieceType != ChessPiece.PieceType.KING) {
-                                    moves.add(new ChessMove(myPosition, diagonalPos, pieceType));
-                                }
+                    if (currentRow == 7){
+                        for (PieceType pieceType : PieceType.values()) {
+                            if (pieceType != ChessPiece.PieceType.PAWN && pieceType != ChessPiece.PieceType.KING) {
+                                ChessPosition newPosition=new ChessPosition(currentRow +1, currentColumn-1);
+                                ChessMove newMove=new ChessMove(myPosition, newPosition, pieceType);
+                                moves.add(newMove);
                             }
-                        } else {
-                            moves.add(new ChessMove(myPosition, diagonalPos, null));
                         }
                     }
+                    else {
+                        ChessPosition newPosition = new ChessPosition(currentRow+1, currentColumn - 1);
+                        ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                        moves.add(newMove);
+
+                    }
+                }
+                if(currentColumn > 1 && currentColumn < 8 && currentRow > 1 && currentRow < 8 && board.board[currentRow][currentColumn ] != null && board.board[currentRow][currentColumn].getTeamColor() != teamColor) {
+                    if (currentRow == 7){
+                        for (PieceType pieceType : PieceType.values()) {
+                            if (pieceType != ChessPiece.PieceType.PAWN && pieceType != ChessPiece.PieceType.KING) {
+                                ChessPosition newPosition=new ChessPosition(currentRow +1, currentColumn+1);
+                                ChessMove newMove=new ChessMove(myPosition, newPosition, pieceType);
+                                moves.add(newMove);
+                            }
+                        }
+                    }
+                    else {
+                        ChessPosition newPosition = new ChessPosition(currentRow+1, currentColumn + 1);
+                        ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                        moves.add(newMove);
+
+                    }
+                }
+                /* check straight ahead */
+                if (currentRow < 7 && board.board[currentRow][currentColumn-1] == null) {
+                    if (currentRow == 2 && board.board[currentRow+1][currentColumn-1] == null){
+                        ChessPosition newPosition = new ChessPosition(currentRow + 2, currentColumn);
+                        ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                        moves.add(newMove);
+
+                    }
+                    ChessPosition newPosition = new ChessPosition(currentRow + 1, currentColumn);
+                    ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                    moves.add(newMove);
+                }
+                /*Check the bottom*/
+                if (currentRow == 7 && board.board[currentRow][currentColumn-1] == null) {
+                    for (PieceType pieceType : PieceType.values()) {
+                        if (pieceType != ChessPiece.PieceType.PAWN && pieceType != ChessPiece.PieceType.KING) {
+                            ChessPosition newPosition=new ChessPosition(currentRow + 1, currentColumn);
+                            ChessMove newMove=new ChessMove(myPosition, newPosition, pieceType);
+                            moves.add(newMove);
+                        }
+                    }
+
                 }
             }
+            /* I must check that I am able to capture first */
+            if (teamColor == ChessGame.TeamColor.BLACK) {
+                /* code to check the corner */
+                if(currentColumn > 1 && currentColumn < 8 && currentRow > 1 && currentRow < 8 && board.board[currentRow-2][currentColumn -2] != null && board.board[currentRow-2][currentColumn -2].getTeamColor() != teamColor) {
 
-            // Handle pawn promotion on the final row (without capturing)
-            if ((teamColor == ChessGame.TeamColor.WHITE && currentRow + forwardDirection == 8) ||
-                    (teamColor == ChessGame.TeamColor.BLACK && currentRow + forwardDirection == 1)) {
-                for (ChessPiece.PieceType pieceType : ChessPiece.PieceType.values()) {
-                    if (pieceType != ChessPiece.PieceType.PAWN && pieceType != ChessPiece.PieceType.KING) {
-                        ChessPosition newPosition = new ChessPosition(currentRow + forwardDirection, currentColumn);
-                        moves.add(new ChessMove(myPosition, newPosition, pieceType));
+                    if (currentRow == 2){
+                        for (PieceType pieceType : PieceType.values()) {
+                            if (pieceType != ChessPiece.PieceType.PAWN && pieceType != ChessPiece.PieceType.KING) {
+                                ChessPosition newPosition=new ChessPosition(currentRow - 1, currentColumn-1);
+                                ChessMove newMove=new ChessMove(myPosition, newPosition, pieceType);
+                                moves.add(newMove);
+                            }
+                        }
                     }
+                    else {
+                    ChessPosition newPosition = new ChessPosition(currentRow-1, currentColumn - 1);
+                    ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                    moves.add(newMove);}
+                }
+                if(currentColumn > 1 && currentColumn < 8 && currentRow > 1 && currentRow < 8 && board.board[currentRow-2][currentColumn ] != null && board.board[currentRow-2][currentColumn].getTeamColor() != teamColor) {
+                    if (currentRow == 2){
+                        for (PieceType pieceType : PieceType.values()) {
+                            if (pieceType != ChessPiece.PieceType.PAWN && pieceType != ChessPiece.PieceType.KING) {
+                                ChessPosition newPosition=new ChessPosition(currentRow - 1, currentColumn+1);
+                                ChessMove newMove=new ChessMove(myPosition, newPosition, pieceType);
+                                moves.add(newMove);
+                            }
+                        }
+                    }
+                    else {
+                        ChessPosition newPosition = new ChessPosition(currentRow-1, currentColumn + 1);
+                        ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                        moves.add(newMove);}
+                }
+                /* check straight ahead */
+                if (currentRow > 2 && board.board[currentRow-2][currentColumn-1] == null) {
+                    if (currentRow == 7 && board.board[currentRow-3][currentColumn-1] == null){
+                        ChessPosition newPosition = new ChessPosition(currentRow -2, currentColumn);
+                        ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                        moves.add(newMove);
+
+                    }
+                    ChessPosition newPosition = new ChessPosition(currentRow -1, currentColumn);
+                    ChessMove newMove = new ChessMove(myPosition, newPosition, null);
+                    moves.add(newMove);
+                }
+                /*Check the bottom*/
+                if (currentRow == 2 && board.board[currentRow-2][currentColumn-1] == null) {
+                    for (PieceType pieceType : PieceType.values()) {
+                        if (pieceType != ChessPiece.PieceType.PAWN && pieceType != ChessPiece.PieceType.KING) {
+                            ChessPosition newPosition=new ChessPosition(currentRow - 1, currentColumn);
+                            ChessMove newMove=new ChessMove(myPosition, newPosition, pieceType);
+                            moves.add(newMove);
+                        }
+                    }
+
                 }
             }
         }
-
         if (pieceType == ChessPiece.PieceType.ROOK) {
             // Define directional offsets: {rowOffset, columnOffset}
             int[][] directions = {
@@ -167,7 +227,6 @@ public class ChessPiece {
                 }
             }
         }
-
         return moves;
     }
 }
