@@ -215,15 +215,15 @@ public class ChessPiece {
                 // Handle moves and captures
                 if (board.getPiece(curr) == null) {
                     moves.add(newMove);
-                    // For pieces like the king and queen, stop moving in this direction after one step
+                    // for those that do not move forward constantly, break;
                     if (pieceType == ChessPiece.PieceType.KING || pieceType == ChessPiece.PieceType.KNIGHT) {
                         break;
                     }
                 } else if (board.getPiece(curr).getTeamColor() != teamColor) {
                     moves.add(newMove);
-                    break; // Stop if capturing an opponent's piece
+                    break;
                 } else {
-                    break; // Stop if blocked by a piece of the same color
+                    break;
                 }
 
 
