@@ -183,6 +183,7 @@ public class ChessPiece {
 
         // Handle piece-specific movement patterns
         int[][] directions = null;
+        // better method?
         switch (pieceType) {
             case ROOK:
                 directions = rookDirections;
