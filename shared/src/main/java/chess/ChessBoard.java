@@ -22,6 +22,13 @@ public class ChessBoard {
         ChessPiece piece = getPiece(move.getStartPosition());
         board[move.getStartPosition().getRow()-1][move.getStartPosition().getColumn()-1] = null;
         addPiece(move.getEndPosition(), piece);
+        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+            if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
+                blackKing = move.getEndPosition();
+            } else {
+                whiteKing = move.getEndPosition();
+            }
+        }
     }
 
     final static Map<Character, ChessPiece.PieceType> CHAR_TO_TYPE_MAP = Map.of(
@@ -130,6 +137,9 @@ public class ChessBoard {
                 }
             }
         }
+        if (blackKing != null && whiteKing != null) {
+        copy.blackKing = blackKing.copy();
+        copy.whiteKing = whiteKing.copy();}
         return copy;
     }
 }

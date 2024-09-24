@@ -83,6 +83,17 @@ public class ChessGame {
         for (ChessMove m : validM) {
             if (move.equals(m)) {
                 board.move(move);
+                if (move.getPromotionPiece() != null ) {
+                    ChessPiece promo = board.getPiece(move.getEndPosition());
+                    promo.promote(move.getPromotionPiece());
+                    if (promo.getTeamColor() == TeamColor.WHITE) {
+                        setTeamTurn(TeamColor.BLACK);
+                    }
+                   else {
+                       setTeamTurn(TeamColor.WHITE);
+                    }
+
+                }
                 return;
             }
         }
@@ -94,10 +105,7 @@ public class ChessGame {
         ChessGame temp = new ChessGame();
         temp.setBoard(board.deepCopy());
         temp.board.move(move);
-        if (temp.isInCheck(team)){
-            return false;
-        }
-        return true;
+        return !temp.isInCheck(team);
 
     }
     /**

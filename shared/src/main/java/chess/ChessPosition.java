@@ -52,4 +52,8 @@ public class ChessPosition {
     public int getColumn() {
        return this.column;
     }
+
+    public ChessPosition copy(){
+        return new ChessPosition(row,column);
+    }
 }

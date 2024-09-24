@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class ChessPiece {
     private final ChessGame.TeamColor teamColor;
-    private final ChessPiece.PieceType pieceType;
+    private  ChessPiece.PieceType pieceType;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.teamColor = pieceColor;
@@ -240,5 +240,8 @@ public class ChessPiece {
         ChessPiece dupe =  new ChessPiece(teamColor, pieceType);
         return dupe;
 
+    }
+    public void promote(ChessPiece.PieceType pieceType){
+        this.pieceType = pieceType;
     }
 }
