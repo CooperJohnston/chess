@@ -56,13 +56,7 @@ public class ChessPiece {
     public int hashCode() {
         return Objects.hash(teamColor, pieceType);
     }
-    // to make it easier i will just combine the queen
-    private int[][] combineDirections(int[][] dir1, int[][] dir2) {
-        int[][] combined = new int[dir1.length + dir2.length][];
-        System.arraycopy(dir1, 0, combined, 0, dir1.length);
-        System.arraycopy(dir2, 0, combined, dir1.length, dir2.length);
-        return combined;
-    }
+
 
     @Override
     public String toString() {
@@ -192,7 +186,7 @@ public class ChessPiece {
                 directions = bishopDirections;
                 break;
             case QUEEN:
-                directions = combineDirections(rookDirections, bishopDirections);
+                directions = kingDirections;
                 break;
             case KING:
                 directions = kingDirections;
