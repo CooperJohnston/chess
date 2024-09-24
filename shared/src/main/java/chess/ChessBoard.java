@@ -18,6 +18,21 @@ public class ChessBoard {
     public ChessBoard() {
         
     }
+    public ChessPosition getKing(ChessGame.TeamColor color) {
+        // Loop through all positions on the board
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPiece piece = getPiece(new ChessPosition(i, j));  // Adjust this based on how your board stores pieces
+
+                // Ensure the piece is not null before accessing its attributes
+                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING && piece.getTeamColor() == color) {
+                    return new ChessPosition(i, j);  // Return the King's position
+                }
+            }
+        }
+        return null;  // Return null if no King is found
+    }
+
     public void move(ChessMove move) {
         ChessPiece piece = getPiece(move.getStartPosition());
         board[move.getStartPosition().getRow()-1][move.getStartPosition().getColumn()-1] = null;

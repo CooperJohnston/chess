@@ -57,7 +57,8 @@ public class ChessGame {
         Collection<ChessMove> validM = new ArrayList<>();
         // this loop calls the test function that makes a stub
         ChessPiece piece = board.getPiece(startPosition);
-        for ( ChessMove m : piece.pieceMoves(board,startPosition)){
+        Collection<ChessMove> all_moves = piece.pieceMoves(board, startPosition);
+        for ( ChessMove m : all_moves){
             if (testMove(m, piece.getTeamColor())){
                 validM.add(m);
             }
@@ -118,6 +119,9 @@ public class ChessGame {
         ChessPosition klocation = (teamColor == TeamColor.WHITE) ? board.whiteKing : board.blackKing;
         // loop through and find all the moves of all the WHITE or Black pieces
         // if any of them have a move, check to see if it points to the king
+        if (klocation == null){
+            klocation = board.getKing(teamColor);
+        }
         for (int i =1; i <= 8; i ++){
             for (int j = 1; j <= 8; j ++){
                 ChessPosition curr = new ChessPosition(i, j);
