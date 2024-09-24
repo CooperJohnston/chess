@@ -12,9 +12,18 @@ import java.util.Objects;
  */
 public class ChessBoard {
     ChessPiece[][] board = new ChessPiece[8][8];
+    ChessPosition whiteKing;
+    ChessPosition blackKing;
+
     public ChessBoard() {
         
     }
+    public void move(ChessMove move) {
+        ChessPiece piece = getPiece(move.getStartPosition());
+        board[move.getStartPosition().getRow()-1][move.getStartPosition().getColumn()-1] = null;
+        addPiece(move.getEndPosition(), piece);
+    }
+
     final static Map<Character, ChessPiece.PieceType> CHAR_TO_TYPE_MAP = Map.of(
             'p', ChessPiece.PieceType.PAWN,
             'n', ChessPiece.PieceType.KNIGHT,
@@ -31,6 +40,14 @@ public class ChessBoard {
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
         board[position.getRow()-1][position.getColumn()-1] = piece;
+        if (piece.getPieceType() == ChessPiece.PieceType.KING){
+            if (piece.getTeamColor() == ChessGame.TeamColor.BLACK){
+                blackKing = position;
+            }
+            else {
+                whiteKing = position;
+            }
+        };
     }
 
     @Override
@@ -103,5 +120,16 @@ public class ChessBoard {
             }
         }
 
+    }
+    public ChessBoard deepCopy() {
+        ChessBoard copy = new ChessBoard();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (this.board[i][j] != null) {
+                    copy.board[i][j] = this.board[i][j].copy();
+                }
+            }
+        }
+        return copy;
     }
 }

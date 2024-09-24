@@ -236,4 +236,9 @@ public class ChessPiece {
 
         return moves;
     }
+    public ChessPiece copy(){
+        ChessPiece dupe =  new ChessPiece(teamColor, pieceType);
+        return dupe;
+
+    }
 }

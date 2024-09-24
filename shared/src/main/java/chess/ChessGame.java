@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -48,7 +49,20 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        // i can check if a team is in check; therefore if I am in check after i run the move, if i am still in check
+        // then it is not a valid move
+        if (board.getPiece(startPosition) == null){
+            return null;
+        }
+        Collection<ChessMove> validM = new ArrayList<>();
+        // this loop calls the test function that makes a stub
+        ChessPiece piece = board.getPiece(startPosition);
+        for ( ChessMove m : piece.pieceMoves(board,startPosition)){
+            if (testMove(m, piece.getTeamColor())){
+                validM.add(m);
+            }
+        }
+        return validM;
     }
 
     /**
@@ -58,9 +72,34 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+        if (piece == null){
+            throw new InvalidMoveException("no piece found");
+        }
+        if (piece.getTeamColor() != curr) {
+            throw new InvalidMoveException("Incorrect team color");
+        }
+        Collection<ChessMove> validM = validMoves(move.getStartPosition());
+        for (ChessMove m : validM) {
+            if (move.equals(m)) {
+                board.move(move);
+                return;
+            }
+        }
+        throw new InvalidMoveException("Invalid move");
     }
 
+    public boolean testMove(ChessMove move, TeamColor team)  {
+        // code that brute forces a move for testing, better method?
+        ChessGame temp = new ChessGame();
+        temp.setBoard(board.deepCopy());
+        temp.board.move(move);
+        if (temp.isInCheck(team)){
+            return false;
+        }
+        return true;
+
+    }
     /**
      * Determines if the given team is in check
      *
@@ -68,7 +107,23 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessPosition klocation = (teamColor == TeamColor.WHITE) ? board.whiteKing : board.blackKing;
+        // loop through and find all the moves of all the WHITE or Black pieces
+        // if any of them have a move, check to see if it points to the king
+        for (int i =1; i <= 8; i ++){
+            for (int j = 1; j <= 8; j ++){
+                ChessPosition curr = new ChessPosition(i, j);
+                if (board.getPiece(curr) != null && board.getPiece(curr).getTeamColor() != teamColor) {
+                    Collection<ChessMove> tempMoves = board.getPiece(curr).pieceMoves(board,curr);
+                    for (ChessMove move : tempMoves) {
+                        if (move.getEndPosition().equals(klocation)){
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
