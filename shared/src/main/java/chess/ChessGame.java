@@ -84,16 +84,15 @@ public class ChessGame {
         for (ChessMove m : validM) {
             if (move.equals(m)) {
                 board.move(move);
+                ChessPiece promo = board.getPiece(move.getEndPosition());
                 if (move.getPromotionPiece() != null ) {
-                    ChessPiece promo = board.getPiece(move.getEndPosition());
                     promo.promote(move.getPromotionPiece());
-                    if (promo.getTeamColor() == TeamColor.WHITE) {
-                        setTeamTurn(TeamColor.BLACK);
-                    }
-                   else {
-                       setTeamTurn(TeamColor.WHITE);
-                    }
-
+                }
+                if (promo.getTeamColor() == TeamColor.WHITE) {
+                    setTeamTurn(TeamColor.BLACK);
+                }
+                else {
+                    setTeamTurn(TeamColor.WHITE);
                 }
                 return;
             }
