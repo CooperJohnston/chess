@@ -145,8 +145,30 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        // First, check if the team is in check
+        if (isInCheck(teamColor)) {
+            // Iterate through all the pieces on the board
+            for (int i = 1; i <= 8; i++) {
+                for (int j = 1; j <= 8; j++) {
+                    ChessPiece curr = board.getPiece(new ChessPosition(i, j));
+                    // Check if the piece belongs to the team in question
+                    if (curr != null && curr.getTeamColor() == teamColor) {
+                        // Get valid moves for the current piece
+                        Collection<ChessMove> validM = validMoves(new ChessPosition(i, j));
+                        // If the piece has valid moves, it's not checkmate
+                        if (validM != null && !validM.isEmpty()) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            // If no piece has valid moves and the team is in check, it's checkmate
+            return true;
+        }
+        // If the team is not in check, it's not checkmate
+        return false;
     }
+
 
     /**
      * Determines if the given team is in stalemate, which here is defined as having
@@ -156,8 +178,30 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        // First, ensure the team is NOT in check
+        if (!isInCheck(teamColor)) {
+            // Iterate through all the pieces on the board
+            for (int i = 1; i <= 8; i++) {
+                for (int j = 1; j <= 8; j++) {
+                    ChessPiece curr = board.getPiece(new ChessPosition(i, j));
+                    // Check if the piece belongs to the specified team
+                    if (curr != null && curr.getTeamColor() == teamColor) {
+                        // Get valid moves for the current piece
+                        Collection<ChessMove> validM = validMoves(new ChessPosition(i, j));
+                        // If the piece has any valid moves, it's not a stalemate
+                        if (validM != null && !validM.isEmpty()) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            // If no piece has valid moves and the team is not in check, it's a stalemate
+            return true;
+        }
+        // If the team is in check, it's not a stalemate
+        return false;
     }
+
 
     /**
      * Sets this game's chessboard with a given board
