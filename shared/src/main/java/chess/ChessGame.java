@@ -12,6 +12,7 @@ import java.util.Collection;
 public class ChessGame {
     ChessBoard board = new ChessBoard();
     TeamColor curr;
+
     public ChessGame() {
         board.resetBoard();
         setTeamTurn(TeamColor.WHITE);
@@ -73,32 +74,30 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        // get start
         ChessPiece piece = board.getPiece(move.getStartPosition());
-        if (piece == null){
-            throw new InvalidMoveException("no piece found");
+
+        if (piece == null) {
+            throw new InvalidMoveException("No piece found");
         }
         if (piece.getTeamColor() != curr) {
-            throw new InvalidMoveException("Incorrect team color");
+            throw new InvalidMoveException("Incorrect team color tried to move");
         }
+
         Collection<ChessMove> validM = validMoves(move.getStartPosition());
-        for (ChessMove m : validM) {
-            if (move.equals(m)) {
-                board.move(move);
-                ChessPiece promo = board.getPiece(move.getEndPosition());
-                if (move.getPromotionPiece() != null ) {
-                    promo.promote(move.getPromotionPiece());
-                }
-                if (promo.getTeamColor() == TeamColor.WHITE) {
-                    setTeamTurn(TeamColor.BLACK);
-                }
-                else {
-                    setTeamTurn(TeamColor.WHITE);
-                }
-                return;
+        // see if the move is valid to ensure we can do it;
+        // BETTER METHOD?
+        if (validM != null && validM.contains(move)) {
+            board.move(move);
+            if (move.getPromotionPiece() != null) {
+                board.getPiece(move.getEndPosition()).promote(move.getPromotionPiece());
             }
+            setTeamTurn(piece.getTeamColor() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
+        } else {
+            throw new InvalidMoveException("Invalid move");
         }
-        throw new InvalidMoveException("Invalid move");
     }
+
 
     public boolean testMove(ChessMove move, TeamColor team)  {
         // code that brute forces a move for testing, better method?
@@ -138,34 +137,39 @@ public class ChessGame {
     }
 
     /**
+     * A helper method to check whether or not a team has valid moves
+     *
+     * @param teamColor team to check out
+     * @return
+     */
+    private boolean hasValidMoves(TeamColor teamColor) {
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPiece curr = board.getPiece(new ChessPosition(i, j));
+                if (curr != null && curr.getTeamColor() == teamColor) {
+                    Collection<ChessMove> validM = validMoves(new ChessPosition(i, j));
+                    if (validM != null && !validM.isEmpty()) {
+                        return true; // Return true if valid moves are found
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
+
+
+
+
+    /**
      * Determines if the given team is in checkmate
      *
      * @param teamColor which team to check for checkmate
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        // First, check if the team is in check
-        if (isInCheck(teamColor)) {
-            // Iterate through all the pieces on the board
-            for (int i = 1; i <= 8; i++) {
-                for (int j = 1; j <= 8; j++) {
-                    ChessPiece curr = board.getPiece(new ChessPosition(i, j));
-                    // Check if the piece belongs to the team in question
-                    if (curr != null && curr.getTeamColor() == teamColor) {
-                        // Get valid moves for the current piece
-                        Collection<ChessMove> validM = validMoves(new ChessPosition(i, j));
-                        // If the piece has valid moves, it's not checkmate
-                        if (validM != null && !validM.isEmpty()) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            // If no piece has valid moves and the team is in check, it's checkmate
-            return true;
-        }
-        // If the team is not in check, it's not checkmate
-        return false;
+        return isInCheck(teamColor) && !hasValidMoves(teamColor);
     }
 
 
@@ -177,28 +181,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        // First, ensure the team is NOT in check
-        if (!isInCheck(teamColor)) {
-            // Iterate through all the pieces on the board
-            for (int i = 1; i <= 8; i++) {
-                for (int j = 1; j <= 8; j++) {
-                    ChessPiece curr = board.getPiece(new ChessPosition(i, j));
-                    // Check if the piece belongs to the specified team
-                    if (curr != null && curr.getTeamColor() == teamColor) {
-                        // Get valid moves for the current piece
-                        Collection<ChessMove> validM = validMoves(new ChessPosition(i, j));
-                        // If the piece has any valid moves, it's not a stalemate
-                        if (validM != null && !validM.isEmpty()) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            // If no piece has valid moves and the team is not in check, it's a stalemate
-            return true;
-        }
-        // If the team is in check, it's not a stalemate
-        return false;
+        return !isInCheck(teamColor) && !hasValidMoves(teamColor);
     }
 
 

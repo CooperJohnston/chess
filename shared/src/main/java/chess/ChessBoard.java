@@ -157,4 +157,5 @@ public class ChessBoard {
         copy.whiteKing = whiteKing.copy();}
         return copy;
     }
+
 }
