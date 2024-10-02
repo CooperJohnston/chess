@@ -136,7 +136,7 @@ public class ChessPiece {
                     }
                     ChessPosition side = new ChessPosition(currentRow, currentColumn + diagonal[1]);
                     if (board.getPiece(side) != null && board.getPiece(side).getTeamColor() != teamColor && board.getPiece(side).getPieceType() == PieceType.PAWN) {
-                        if (currentRow == 5 && teamColor == ChessGame.TeamColor.WHITE && board.getPiece(side).doubled == true) {
+                        if (currentRow == 5 && teamColor == ChessGame.TeamColor.WHITE && board.getPiece(side).doubled) {
                             ChessMove move = new ChessMove(myPosition, diagonalPos, null);
                             move.capture_back = true;
                             move.back_location = side;

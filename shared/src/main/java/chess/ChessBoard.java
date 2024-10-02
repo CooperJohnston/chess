@@ -49,6 +49,7 @@ public class ChessBoard {
         }
         if (move.capture_back){
             board[move.back_location.getRow()-1][move.back_location.getColumn()-1] = null;
+            System.out.println(toString());
         }
     }
 

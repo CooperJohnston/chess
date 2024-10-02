@@ -97,8 +97,8 @@ public class ChessGame {
         // BETTER METHOD?
         if (validM != null && validM.contains(move)) {
             for (ChessMove m : validM) {
-                if (m.getEndPosition() ==
-                move.getEndPosition()){
+                if (m.getEndPosition().equals(move.getEndPosition())
+                ){  System.out.println("ADJUSTED MOVE");
                     move.back_location = m.back_location;
                     move.capture_back = m.capture_back;
                     move.double_move = m.double_move;
