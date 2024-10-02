@@ -44,6 +44,12 @@ public class ChessBoard {
                 whiteKing = move.getEndPosition();
             }
         }
+        if(move.double_move){
+            piece.doubled = true;
+        }
+        if (move.capture_back){
+            board[move.back_location.getRow()-1][move.back_location.getColumn()-1] = null;
+        }
     }
 
     final static Map<Character, ChessPiece.PieceType> CHAR_TO_TYPE_MAP = Map.of(
@@ -74,8 +80,18 @@ public class ChessBoard {
 
     @Override
     public String toString() {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPiece piece = getPiece(new ChessPosition(i, j));  // Adjust this based on how your board stores pieces
+                // Ensure the piece is not null before accessing its attributes
+                if (piece != null) {
+                    builder.append(piece.toString());
+                }
+            }
+        }
         return "ChessBoard{" +
-                "board=" + Arrays.toString(board) +
+                "board=" + builder.toString() +
                 '}';
     }
 

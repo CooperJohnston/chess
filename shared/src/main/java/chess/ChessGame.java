@@ -42,6 +42,14 @@ public class ChessGame {
         BLACK
     }
 
+    @Override
+    public String toString() {
+        return "ChessGame{" +
+                "board=" + board +
+                ", curr=" + curr +
+                '}';
+    }
+
     /**
      * Gets a valid moves for a piece at the given location
      *
@@ -88,6 +96,14 @@ public class ChessGame {
         // see if the move is valid to ensure we can do it;
         // BETTER METHOD?
         if (validM != null && validM.contains(move)) {
+            for (ChessMove m : validM) {
+                if (m.getEndPosition() ==
+                move.getEndPosition()){
+                    move.back_location = m.back_location;
+                    move.capture_back = m.capture_back;
+                    move.double_move = m.double_move;
+                }
+            }
             board.move(move);
             if (move.getPromotionPiece() != null) {
                 board.getPiece(move.getEndPosition()).promote(move.getPromotionPiece());

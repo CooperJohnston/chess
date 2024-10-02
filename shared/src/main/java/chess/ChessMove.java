@@ -12,6 +12,9 @@ public class ChessMove {
     private ChessPosition startPosition;
     private ChessPosition endPosition;
     private ChessPiece.PieceType promotionType;
+    public boolean double_move;
+    public boolean capture_back;
+    public ChessPosition back_location;
 
     @Override
     public String toString() {
@@ -27,6 +30,8 @@ public class ChessMove {
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.promotionType = promotionPiece;
+        this.double_move = false;
+        this.capture_back = false;
     }
 
     @Override

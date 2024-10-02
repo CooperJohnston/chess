@@ -13,6 +13,8 @@ import java.util.Objects;
 public class ChessPiece {
     private final ChessGame.TeamColor teamColor;
     private  ChessPiece.PieceType pieceType;
+    public boolean doubled = false;
+
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.teamColor = pieceColor;
@@ -91,8 +93,12 @@ public class ChessPiece {
             if ((teamColor == ChessGame.TeamColor.WHITE && currentRow == 2) ||
                     (teamColor == ChessGame.TeamColor.BLACK && currentRow == 7)) {
                 ChessPosition forwardTwo = new ChessPosition(currentRow + 2 * forwardDirection, currentColumn);
+
                 if (board.getPiece(forwardOne) == null && board.getPiece(forwardTwo) == null) {
-                    moves.add(new ChessMove(myPosition, forwardTwo, null));
+                    ChessMove forwadMove = new ChessMove(myPosition, forwardTwo, null);
+                    forwadMove.double_move = true;
+                    doubled = true;
+                    moves.add(forwadMove);
                 }
             }
 
@@ -120,8 +126,27 @@ public class ChessPiece {
                                     moves.add(new ChessMove(myPosition, diagonalPos, pieceType));
                                 }
                             }
-                        } else {
+                        }
+
+
+                        else {
                             moves.add(new ChessMove(myPosition, diagonalPos, null));
+                        }
+
+                    }
+                    ChessPosition side = new ChessPosition(currentRow, currentColumn + diagonal[1]);
+                    if (board.getPiece(side) != null && board.getPiece(side).getTeamColor() != teamColor && board.getPiece(side).getPieceType() == PieceType.PAWN) {
+                        if (currentRow == 5 && teamColor == ChessGame.TeamColor.WHITE && board.getPiece(side).doubled == true) {
+                            ChessMove move = new ChessMove(myPosition, diagonalPos, null);
+                            move.capture_back = true;
+                            move.back_location = side;
+                            moves.add(move);
+                        }
+                        if (currentRow == 4 && teamColor == ChessGame.TeamColor.BLACK && board.getPiece(side).doubled) {
+                            ChessMove move = new ChessMove(myPosition, diagonalPos, null);
+                            move.capture_back = true;
+                            move.back_location = side;
+                            moves.add(move);
                         }
                     }
                 }
@@ -238,6 +263,7 @@ public class ChessPiece {
     }
     public ChessPiece copy(){
         ChessPiece dupe =  new ChessPiece(teamColor, pieceType);
+        dupe.doubled = doubled;
         return dupe;
 
     }
