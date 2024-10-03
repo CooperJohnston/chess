@@ -12,6 +12,7 @@ import java.util.Collection;
 public class ChessGame {
     ChessBoard board = new ChessBoard();
     TeamColor curr;
+    private boolean enPassant = false;
 
     public ChessGame() {
         board.resetBoard();
@@ -69,9 +70,13 @@ public class ChessGame {
         Collection<ChessMove> all_moves = piece.pieceMoves(board, startPosition);
         for ( ChessMove m : all_moves){
             if (testMove(m, piece.getTeamColor())){
+                if (m.capture_back && !enPassant){
+                    break;
+                }
                 validM.add(m);
             }
         }
+
         return validM;
     }
 
@@ -98,7 +103,7 @@ public class ChessGame {
         if (validM != null && validM.contains(move)) {
             for (ChessMove m : validM) {
                 if (m.getEndPosition().equals(move.getEndPosition())
-                ){  System.out.println("ADJUSTED MOVE");
+                ){
                     move.back_location = m.back_location;
                     move.capture_back = m.capture_back;
                     move.double_move = m.double_move;
@@ -107,6 +112,12 @@ public class ChessGame {
             board.move(move);
             if (move.getPromotionPiece() != null) {
                 board.getPiece(move.getEndPosition()).promote(move.getPromotionPiece());
+            }
+            if (move.double_move){
+                this.enPassant = true;
+            }
+            else {
+                this.enPassant = false;
             }
             setTeamTurn(piece.getTeamColor() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
         } else {

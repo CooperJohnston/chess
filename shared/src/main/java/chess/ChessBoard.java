@@ -35,6 +35,7 @@ public class ChessBoard {
 
     public void move(ChessMove move) {
         ChessPiece piece = getPiece(move.getStartPosition());
+        piece.setHasMoved(true);
         board[move.getStartPosition().getRow()-1][move.getStartPosition().getColumn()-1] = null;
         addPiece(move.getEndPosition(), piece);
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {

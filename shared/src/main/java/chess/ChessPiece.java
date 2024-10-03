@@ -14,6 +14,17 @@ public class ChessPiece {
     private final ChessGame.TeamColor teamColor;
     private  ChessPiece.PieceType pieceType;
     public boolean doubled = false;
+    public boolean seen = false;
+
+    private boolean hasMoved = false;
+
+    public boolean hasMoved() {
+        return hasMoved;
+    }
+
+    public void setHasMoved(boolean hasMoved) {
+        this.hasMoved = hasMoved;
+    }
 
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
@@ -166,10 +177,10 @@ public class ChessPiece {
         }
 
         int[][] rookDirections = {
-                {1, 0},   // Up
-                {-1, 0},  // Down
-                {0, 1},   // Right
-                {0, -1}   // Left
+                {1, 0},
+                {-1, 0},
+                {0, 1},
+                {0, -1}
         };
 
         int[][] bishopDirections = {
@@ -180,14 +191,14 @@ public class ChessPiece {
         };
 
         int[][] kingDirections = {
-                {1, 0},   // Up
-                {-1, 0},  // Down
-                {0, 1},   // Right
-                {0, -1},  // Left
-                {1, 1},   // Up-right
-                {1, -1},  // Up-left
-                {-1, 1},  // Down-right
-                {-1, -1}  // Down-left
+                {1, 0},
+                {-1, 0},
+                {0, 1},
+                {0, -1},
+                {1, 1},
+                {1, -1},
+                {-1, 1},
+                {-1, -1}
         };
         int[][] knightDirections = {
                 {2, 1},
@@ -232,7 +243,7 @@ public class ChessPiece {
                 currentRowTemp += rowOffset;
                 currentColumnTemp += colOffset;
 
-                // Check if out of bounds
+                //  if out of bounds
                 if (currentRowTemp < 1 || currentRowTemp > 8 || currentColumnTemp < 1 || currentColumnTemp > 8) {
                     break;
                 }
@@ -240,7 +251,7 @@ public class ChessPiece {
                 ChessPosition curr = new ChessPosition(currentRowTemp, currentColumnTemp);
                 ChessMove newMove = new ChessMove(myPosition, curr, null);
 
-                // Handle moves and captures
+                // moves and captures
                 if (board.getPiece(curr) == null) {
                     moves.add(newMove);
                     // for those that do not move forward constantly, break;
