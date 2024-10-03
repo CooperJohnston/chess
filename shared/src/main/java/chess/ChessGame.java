@@ -164,7 +164,7 @@ public class ChessGame {
         if (validM != null && validM.contains(move)) {
             for (ChessMove m : validM) {
                 if (m.getEndPosition().equals(move.getEndPosition())
-                ){
+                ){  // get the right data into the piece for en passant... better method
                     move.back_location = m.back_location;
                     move.capture_back = m.capture_back;
                     move.double_move = m.double_move;
@@ -197,7 +197,11 @@ public class ChessGame {
             throw new InvalidMoveException("Invalid move");
         }
     }
-
+    /**
+     *
+     * Checks to see if executing a move puts the team in check mate
+     *
+     * **/
 
     public boolean testMove(ChessMove move, TeamColor team)  {
         // code that brute forces a move for testing, better method?
@@ -242,6 +246,7 @@ public class ChessGame {
      * @param teamColor team to check out
      * @return
      */
+
     private boolean hasValidMoves(TeamColor teamColor) {
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
