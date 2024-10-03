@@ -76,8 +76,69 @@ public class ChessGame {
                 validM.add(m);
             }
         }
+        int kingRow = startPosition.getRow();
+        if (!piece.hasMoved() && piece.getPieceType() == ChessPiece.PieceType.KING) {
+            if (canCastleKingside(piece.getTeamColor())) {
+                validM.add(new ChessMove(startPosition, new ChessPosition(kingRow, 7),null)); // Move king to the kingside castling position (g1 or g8)
+            }
+            if (canCastleQueenside(piece.getTeamColor())) {
+                validM.add(new ChessMove(startPosition, new ChessPosition(kingRow, 3), null)); // Move king to the queenside castling position (c1 or c8)
+            }
+        }
 
         return validM;
+    }
+    private boolean canCastleKingside(TeamColor teamColor) {
+        ChessPosition kingPos = (teamColor == TeamColor.WHITE) ? new ChessPosition(1, 5) : new ChessPosition(8, 5);
+        ChessPosition rookPos = (teamColor == TeamColor.WHITE) ? new ChessPosition(1, 8) : new ChessPosition(8, 8);
+
+        //  if king and rook haven't moved
+        if (board.getPiece(kingPos) == null || board.getPiece(rookPos) == null ||board.getPiece(kingPos).hasMoved() || board.getPiece(rookPos).hasMoved()) {
+            return false;
+        }
+
+        for (int i = 6; i <= 7; i++) {
+            ChessPosition pos = new ChessPosition(kingPos.getRow(), i);
+            if (board.getPiece(pos) != null) {
+                return false;
+            }
+        }
+
+        if (isInCheck(teamColor) || !willPassThroughCheck(kingPos, 6) || !willPassThroughCheck(kingPos, 7)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean canCastleQueenside(TeamColor teamColor) {
+        ChessPosition kingPos = (teamColor == TeamColor.WHITE) ? new ChessPosition(1, 5) : new ChessPosition(8, 5);
+        ChessPosition rookPos = (teamColor == TeamColor.WHITE) ? new ChessPosition(1, 1) : new ChessPosition(8, 1);
+
+        // if king and rook haven't moved
+        if (board.getPiece(kingPos) == null || board.getPiece(rookPos) == null ||board.getPiece(kingPos).hasMoved() || board.getPiece(rookPos).hasMoved()) {
+            return false;
+        }
+
+        for (int i = 2; i <= 4; i++) {
+            ChessPosition pos = new ChessPosition(kingPos.getRow(), i);
+            if (board.getPiece(pos) != null) {
+                return false;
+            }
+        }
+
+        if (isInCheck(teamColor) || !willPassThroughCheck(kingPos, 4) || !willPassThroughCheck(kingPos, 3)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean willPassThroughCheck(ChessPosition kingPos, int column) {
+        ChessPosition tempPos = new ChessPosition(kingPos.getRow(), column);
+        // Simulate king moving through this position and check if it's attacked
+        ChessMove tempMove = new ChessMove(kingPos, tempPos, null);
+        return testMove(tempMove, board.getPiece(kingPos).getTeamColor());
     }
 
     /**
@@ -110,6 +171,18 @@ public class ChessGame {
                 }
             }
             board.move(move);
+            // Handle castling
+            if (piece.getPieceType() == ChessPiece.PieceType.KING && Math.abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) == 2) {
+                if (move.getEndPosition().getColumn() == 7) { // Kingside castling
+                    ChessPosition rookStart = new ChessPosition(move.getStartPosition().getRow(), 8);
+                    ChessPosition rookEnd = new ChessPosition(move.getStartPosition().getRow(), 6);
+                    board.move(new ChessMove(rookStart, rookEnd, null));
+                } else if (move.getEndPosition().getColumn() == 3) { // Queenside castling
+                    ChessPosition rookStart = new ChessPosition(move.getStartPosition().getRow(), 1);
+                    ChessPosition rookEnd = new ChessPosition(move.getStartPosition().getRow(), 4);
+                    board.move(new ChessMove(rookStart, rookEnd, null));
+                }
+            }
             if (move.getPromotionPiece() != null) {
                 board.getPiece(move.getEndPosition()).promote(move.getPromotionPiece());
             }
