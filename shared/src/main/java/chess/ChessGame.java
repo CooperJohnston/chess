@@ -164,14 +164,14 @@ public class ChessGame {
         if (validM != null && validM.contains(move)) {
             for (ChessMove m : validM) {
                 if (m.getEndPosition().equals(move.getEndPosition())
-                ){  // get the right data into the piece for en passant... better method
+                ){  // get the right data into the piece for en passant... better method?! tests need these objects
                     move.back_location = m.back_location;
                     move.capture_back = m.capture_back;
                     move.double_move = m.double_move;
                 }
             }
             board.move(move);
-            // Handle castling
+            // Handle castling HOW FAR IS THE KING MOVING
             if (piece.getPieceType() == ChessPiece.PieceType.KING && Math.abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) == 2) {
                 if (move.getEndPosition().getColumn() == 7) { // Kingside castling
                     ChessPosition rookStart = new ChessPosition(move.getStartPosition().getRow(), 8);
