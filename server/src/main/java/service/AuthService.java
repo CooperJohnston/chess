@@ -1,5 +1,5 @@
 package service;
 
-public class ClearService {
+public class AuthService {
   void delete(){}
 }
