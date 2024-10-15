@@ -13,12 +13,12 @@ public class MemoryUserDAO implements UserDAO {
   }
 
   @Override
-  public void clear() throws DataAccessException {
+  public void clear() {
     userDataList.clear();
   }
 
   @Override
-  public void insertUser(UserData user) throws DataAccessException {
+  public void insertUser(UserData user) {
     userDataList.add(user);
   }
 
@@ -38,5 +38,10 @@ public class MemoryUserDAO implements UserDAO {
       return user;
     }
     throw new DataAccessException("User not found");
+  }
+
+  @Override
+  public ArrayList<UserData> getAllUsers() {
+    return userDataList;
   }
 }

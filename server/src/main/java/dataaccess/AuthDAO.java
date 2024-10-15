@@ -2,6 +2,8 @@ package dataaccess;
 
 import model.AuthData;
 
+import java.util.ArrayList;
+
 public interface AuthDAO {
   void createAuthData(AuthData NewAuth) throws DataAccessException;
 
@@ -12,5 +14,8 @@ public interface AuthDAO {
   void deleteAuthData(String AutToken) throws DataAccessException;
 
   void clear() throws DataAccessException;
+
+  ArrayList<AuthData> getAllAuthData() throws DataAccessException;
+
 
 }
