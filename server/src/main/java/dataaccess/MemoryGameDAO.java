@@ -39,8 +39,32 @@ public class MemoryGameDAO implements GameDAO {
 
   @Override
   public void updateGame(GameData game) {
-
+    for (GameData g : games) {
+      if (g.gameID() == game.gameID()) {
+        games.set(games.indexOf(g), game);
+      }
+    }
   }
 
+  @Override
+  public boolean checkGame(String game) throws DataAccessException {
+    for (GameData gameData : games) {
+      if (gameData.gameName().equals(game)) {
+        return true;
+      }
 
+    }
+    return false;
+  }
+
+  @Override
+  public boolean checkGame(int gameID) throws DataAccessException {
+    for (GameData gameData : games) {
+      if (gameData.gameID() == gameID) {
+        return true;
+      }
+
+    }
+    return false;
+  }
 }
