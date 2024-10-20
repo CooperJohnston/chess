@@ -21,9 +21,12 @@ public class UserService {
   }
 
   public RegisterResponse registerUser(RegisterRequest regRequest) throws DataAccessException {
-    if ((regRequest.getPassword() == null) || (regRequest.getEmail() == null) || (regRequest.getUsername() == null)) {
-      throw new DataAccessException("Username and password are required");
+    if (regRequest.getUsername() == null || regRequest.getUsername().isEmpty() ||
+            regRequest.getPassword() == null || regRequest.getPassword().isEmpty() ||
+            regRequest.getEmail() == null || regRequest.getEmail().isEmpty()) {
+      throw new DataAccessException("Username, password, and email are required");
     }
+
     UserData userData=new UserData(regRequest.getUsername(), regRequest.getPassword(), regRequest.getEmail());
     if (DAO.checkUser(userData)) {
       throw new DataAccessException("User already exists in the database");

@@ -5,9 +5,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
+import model.AuthData;
 import model.GameData;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
@@ -30,7 +32,10 @@ public class GameService {
     this.gameDAO.clear();
   }
 
-  public int generateGameID(String gameName) throws NoSuchAlgorithmException {
+  public int generateGameID(String gameName) throws DataAccessException {
+    if (gameName.isEmpty()) {
+      throw new DataAccessException("Game name cannot be empty");
+    }
     try {
       MessageDigest digest=MessageDigest.getInstance("SHA-256");
       byte[] hash=digest.digest(gameName.getBytes(StandardCharsets.UTF_8));
@@ -44,7 +49,7 @@ public class GameService {
 
       return gameID;
     } catch (NoSuchAlgorithmException e) {
-      return 0;
+      throw new DataAccessException("No algorithm available");
     }
   }
 
@@ -59,11 +64,11 @@ public class GameService {
     try {
 
       int newID=generateGameID(gameRequest.getName());
-      GameData newGame=new GameData(newID, null, null, gameRequest.getName(), null);
+      GameData newGame=new GameData(newID, null, null, gameRequest.getName(), new ChessGame());
       gameDAO.createGame(newGame);
-      return new CreateGameResponse(newID, null);
+      return new CreateGameResponse(newID, gameRequest.getAuthToken());
 
-    } catch (NoSuchAlgorithmException e) {
+    } catch (DataAccessException e) {
       throw new DataAccessException("Error: NoSuchAlgorithmException");
     }
   }
@@ -72,32 +77,29 @@ public class GameService {
     if (gameRequest.getID() <= 0) {
       throw new DataAccessException("Error: bad request");
     }
-    if (!gameDAO.checkGame(gameRequest.getID())) {
+    GameData gameData=gameDAO.getGame(gameRequest.getID());
+    if (gameData == null) {
       throw new DataAccessException("Error: unauthorized");
     }
     if (gameRequest.getPlayerColor() == null || gameRequest.getPlayerColor().isEmpty()) {
       return new JoinGameResponse(gameRequest.getID(), null, gameRequest.getAuth());
     }
-    if (gameDAO.getGame(gameRequest.getID()).blackUsername() != null && gameDAO.getGame(gameRequest.getID()).whiteUsername() != null) {
-      throw new DataAccessException("Error: already taken");
+    AuthData authData=authDAO.getAuthData(gameRequest.getAuth());
+    if (authData == null) {
+      throw new DataAccessException("Error: Invalid authorization token");
     }
-    if (gameRequest.getPlayerColor().equals("WHITE") && gameDAO.getGame(gameRequest.getID()).whiteUsername() == null) {
-      GameData gameData=gameDAO.getGame(gameRequest.getID());
-      String userName=authDAO.getAuthData(gameRequest.getAuth()).Username();
+    String userName=authData.Username();
+    if ("WHITE".equals(gameRequest.getPlayerColor()) && gameData.whiteUsername() == null) {
       GameData updateData=new GameData(gameData.gameID(), userName, gameData.blackUsername(), gameData.gameName(), gameData.game());
       gameDAO.updateGame(updateData);
-      return new JoinGameResponse(gameRequest.getID(), gameRequest.getPlayerColor(), gameRequest.getAuth());
-
+      return new JoinGameResponse(gameRequest.getID(), "WHITE", gameRequest.getAuth());
     }
-    if (gameRequest.getPlayerColor().equals("BLACK") && gameDAO.getGame(gameRequest.getID()).blackUsername() == null) {
-      GameData gameData=gameDAO.getGame(gameRequest.getID());
-      String userName=authDAO.getAuthData(gameRequest.getAuth()).Username();
+    if ("BLACK".equals(gameRequest.getPlayerColor()) && gameData.blackUsername() == null) {
       GameData updateData=new GameData(gameData.gameID(), gameData.whiteUsername(), userName, gameData.gameName(), gameData.game());
       gameDAO.updateGame(updateData);
-      return new JoinGameResponse(gameRequest.getID(), gameRequest.getPlayerColor(), gameRequest.getAuth());
-    } else {
-      throw new DataAccessException("Error: already taken");
+      return new JoinGameResponse(gameRequest.getID(), "BLACK", gameRequest.getAuth());
     }
+    throw new DataAccessException("Error: already taken");
   }
 
 

@@ -12,17 +12,20 @@ public class AuthService {
 
   private final AuthDAO DAO;
 
-  AuthService(AuthDAO DAO) {
+  public AuthService(AuthDAO DAO) {
     this.DAO=DAO;
   }
 
-  void clear() throws DataAccessException {
+  public void clear() throws DataAccessException {
     DAO.clear();
   }
 
   public String makeAuth(String username) throws DataAccessException {
+    if (username == null || username.isEmpty()) {
+      throw new DataAccessException("Username cannot be null or empty");
+    }
     String token=UUID.randomUUID().toString();
-    AuthData authData=new AuthData(username, token);
+    AuthData authData=new AuthData(token, username);
     DAO.createAuthData(authData);
     return token;
   }

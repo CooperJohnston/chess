@@ -25,7 +25,7 @@ public class MemoryUserDAO implements UserDAO {
   @Override
   public boolean checkUser(UserData user) throws DataAccessException {
     for (UserData userData : userDataList) {
-      if (userData.equals(user)) {
+      if (userData.username().equals(user.username()) && userData.password().equals(user.password())) {
         return true;
       }
     }
@@ -34,8 +34,10 @@ public class MemoryUserDAO implements UserDAO {
 
   @Override
   public UserData getUser(UserData user) throws DataAccessException {
-    if (userDataList.contains(user)) {
-      return user;
+    for (UserData userData : userDataList) {
+      if (userData.username().equals(user.username()) && userData.password().equals(user.password())) {
+        return userData;
+      }
     }
     throw new DataAccessException("User not found");
   }

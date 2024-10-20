@@ -40,6 +40,7 @@ public class MemoryAuthDAO implements AuthDAO {
   public void deleteAuthData(String AutToken) throws DataAccessException {
     if (getAuthData(AutToken) != null) {
       authData.remove(getAuthData(AutToken));
+      return;
     }
     throw new DataAccessException("You are not allowed to delete this auth data");
   }
