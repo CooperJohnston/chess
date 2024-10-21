@@ -169,7 +169,9 @@ public class ChessPiece {
 
       // Capture and promotion
       if (pieceAtDiagonal != null && pieceAtDiagonal.getTeamColor() != teamColor) {
-        if (diagRow == 8 || diagRow == 1) {
+        boolean isPromotionRow=(diagRow == 8 || diagRow == 1);
+
+        if (isPromotionRow) {
           for (ChessPiece.PieceType pieceType : ChessPiece.PieceType.values()) {
             if (pieceType != ChessPiece.PieceType.PAWN && pieceType != ChessPiece.PieceType.KING) {
               moves.add(new ChessMove(myPosition, diagonalPos, pieceType));
@@ -179,6 +181,7 @@ public class ChessPiece {
           moves.add(new ChessMove(myPosition, diagonalPos, null));
         }
       }
+
 
       // En passant capture
       ChessPosition side=new ChessPosition(currentRow, currentColumn + diagonal[1]);
