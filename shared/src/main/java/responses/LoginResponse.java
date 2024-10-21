@@ -2,18 +2,26 @@ package responses;
 
 public class LoginResponse {
   private String username;
-  private String auth;
+  private String authToken;
 
   public LoginResponse(String username, String auth) {
     this.username=username;
-    this.auth=auth;
+    this.authToken=auth;
   }
 
   public String getUsername() {
     return username;
   }
 
+  public void getAuthToken(String authToken) {
+    this.authToken=authToken;
+  }
+
+  public void setAuthToken(String authToken) {
+    this.authToken=authToken;
+  }
+
   public String getAuth() {
-    return auth;
+    return authToken;
   }
 }

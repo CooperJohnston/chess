@@ -39,11 +39,11 @@ public class UserService {
 
   public LoginResponse loginUser(LoginRequest loginRequest) throws DataAccessException {
     if (loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
-      throw new DataAccessException("Username and password are required");
+      throw new DataAccessException("Error: unauthorized");
     }
     UserData userData=new UserData(loginRequest.getUsername(), loginRequest.getPassword(), null);
     if (!DAO.checkUser(userData) || !DAO.getUser(userData).password().equals(loginRequest.getPassword())) {
-      throw new DataAccessException("User is not recognized");
+      throw new DataAccessException("Error: unauthorized");
     }
     return new LoginResponse(loginRequest.getUsername(), null);
 

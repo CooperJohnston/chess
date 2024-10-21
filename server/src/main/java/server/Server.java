@@ -3,7 +3,9 @@ package server;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dataaccess.*;
+import requests.LoginRequest;
 import requests.RegisterRequest;
+import responses.LoginResponse;
 import responses.RegisterResponse;
 import service.AuthService;
 import service.GameService;
@@ -36,6 +38,7 @@ public class Server {
     // Register your endpoints and handle exceptions here.
     Spark.delete("/db", this::clear);
     Spark.post("/user", this::register);
+    Spark.post("/session", this::login);
 
     //This line initializes the server and can be removed once you have a functioning endpoint
     Spark.init();
@@ -78,6 +81,29 @@ public class Server {
         error.addProperty("message", e.getMessage());
         return new Gson().toJson(error);
 
+      }
+    }
+  }
+
+  private Object login(Request req, Response res) throws DataAccessException {
+    try {
+      var loginReq=new Gson().fromJson(req.body(), LoginRequest.class);
+      LoginResponse loginResp=userService.loginUser(loginReq);
+      loginResp.setAuthToken(authService.makeAuth(loginReq));
+      return new Gson().toJson(loginResp);
+    } catch (DataAccessException e) {
+      if (e.getMessage().equals("Error: unauthorized")) {
+        res.status(401);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "Login");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+      } else {
+        res.status(500);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "Login");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
       }
     }
   }
