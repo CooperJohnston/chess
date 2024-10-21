@@ -23,7 +23,7 @@ public class MemoryUserDAO implements UserDAO {
   }
 
   @Override
-  public boolean checkUser(UserData user) throws DataAccessException {
+  public boolean checkUser(UserData user) {
     for (UserData userData : userDataList) {
       if (userData.username().equals(user.username()) && userData.password().equals(user.password())) {
         return true;

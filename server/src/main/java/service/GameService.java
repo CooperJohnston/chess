@@ -88,7 +88,7 @@ public class GameService {
     if (authData == null) {
       throw new DataAccessException("Error: Invalid authorization token");
     }
-    String userName=authData.Username();
+    String userName=authData.username();
     if (ChessGame.TeamColor.WHITE.equals(gameRequest.getPlayerColor()) && gameData.whiteUsername() == null) {
       GameData updateData=new GameData(gameData.gameID(), userName, gameData.blackUsername(), gameData.gameName(), gameData.game());
       gameDAO.updateGame(updateData);

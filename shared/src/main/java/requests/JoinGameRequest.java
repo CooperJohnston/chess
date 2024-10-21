@@ -8,9 +8,9 @@ public class JoinGameRequest {
   private String authToken;
   private final int gameID;
 
-  public JoinGameRequest(ChessGame.TeamColor playerColor, int ID) {
+  public JoinGameRequest(ChessGame.TeamColor playerColor, int id) {
     this.playerColor=playerColor;
-    this.gameID=ID;
+    this.gameID=id;
   }
 
   public ChessGame.TeamColor getPlayerColor() {

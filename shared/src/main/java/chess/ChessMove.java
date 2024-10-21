@@ -9,64 +9,68 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessMove {
-    private ChessPosition startPosition;
-    private ChessPosition endPosition;
-    private ChessPiece.PieceType promotionType;
-    public boolean double_move;
-    public boolean capture_back;
-    public ChessPosition back_location;
+  private ChessPosition startPosition;
+  private ChessPosition endPosition;
+  private ChessPiece.PieceType promotionType;
+  public boolean doubleMove;
+  public boolean captureBack;
+  public ChessPosition backLocation;
 
-    @Override
-    public String toString() {
-        return "Move{" +
-                "start=" + startPosition +
-                ", end=" + endPosition +
-                ", promotionType=" + promotionType +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "Move{" +
+            "start=" + startPosition +
+            ", end=" + endPosition +
+            ", promotionType=" + promotionType +
+            '}';
+  }
 
-    public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
-                     ChessPiece.PieceType promotionPiece) {
-        this.startPosition = startPosition;
-        this.endPosition = endPosition;
-        this.promotionType = promotionPiece;
-        this.double_move = false;
-        this.capture_back = false;
-    }
+  public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
+                   ChessPiece.PieceType promotionPiece) {
+    this.startPosition=startPosition;
+    this.endPosition=endPosition;
+    this.promotionType=promotionPiece;
+    this.doubleMove=false;
+    this.captureBack=false;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ChessMove chessMove)) return false;
-      return Objects.equals(startPosition, chessMove.startPosition) && Objects.equals(endPosition, chessMove.endPosition) && promotionType == chessMove.promotionType;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
+    if (!(o instanceof ChessMove chessMove)) {
+      return false;
+    }
+    return Objects.equals(startPosition, chessMove.startPosition) && Objects.equals(endPosition, chessMove.endPosition);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(startPosition, endPosition, promotionType);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(startPosition, endPosition, promotionType);
+  }
 
-    /**
-     * @return ChessPosition of starting location
-     */
-    public ChessPosition getStartPosition() {
-        return startPosition;
-    }
+  /**
+   * @return ChessPosition of starting location
+   */
+  public ChessPosition getStartPosition() {
+    return startPosition;
+  }
 
-    /**
-     * @return ChessPosition of ending location
-     */
-    public ChessPosition getEndPosition() {
-        return endPosition;
-    }
+  /**
+   * @return ChessPosition of ending location
+   */
+  public ChessPosition getEndPosition() {
+    return endPosition;
+  }
 
-    /**
-     * Gets the type of piece to promote a pawn to if pawn promotion is part of this
-     * chess move
-     *
-     * @return Type of piece to promote a pawn to, or null if no promotion
-     */
-    public ChessPiece.PieceType getPromotionPiece() {
-        return promotionType;
-    }
+  /**
+   * Gets the type of piece to promote a pawn to if pawn promotion is part of this
+   * chess move
+   *
+   * @return Type of piece to promote a pawn to, or null if no promotion
+   */
+  public ChessPiece.PieceType getPromotionPiece() {
+    return promotionType;
+  }
 }

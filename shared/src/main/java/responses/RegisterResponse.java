@@ -3,7 +3,7 @@ package responses;
 public class RegisterResponse {
 
   private String authToken;
-  private String username;
+  private final String username;
 
   public RegisterResponse(String auth, String username) {
     this.authToken=auth;

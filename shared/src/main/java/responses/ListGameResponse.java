@@ -4,15 +4,6 @@ import model.GameData;
 
 import java.util.ArrayList;
 
-public class ListGameResponse {
+public record ListGameResponse(ArrayList<GameData> games) {
 
-  private final ArrayList<GameData> games;
-
-  public ListGameResponse(ArrayList<GameData> games) {
-    this.games=games;
-  }
-
-  public ArrayList<GameData> getGames() {
-    return games;
-  }
 }

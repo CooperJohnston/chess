@@ -169,9 +169,9 @@ public class Server {
 
   private Object listGames(Request req, Response res) throws DataAccessException {
     try {
-      String Auth=req.headers("Authorization");
+      String auth=req.headers("Authorization");
       ListGameResponse listGameResponse=new ListGameResponse(gameService.getAllGames());
-      authService.authenticate(Auth);
+      authService.authenticate(auth);
       return new Gson().toJson(listGameResponse);
 
     } catch (DataAccessException e) {

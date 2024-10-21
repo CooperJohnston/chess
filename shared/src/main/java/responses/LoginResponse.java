@@ -1,7 +1,7 @@
 package responses;
 
 public class LoginResponse {
-  private String username;
+  private final String username;
   private String authToken;
 
   public LoginResponse(String username, String auth) {

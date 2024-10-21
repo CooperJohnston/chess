@@ -10,14 +10,14 @@ import requests.RegisterRequest;
 
 public class AuthService {
 
-  private final AuthDAO DAO;
+  private final AuthDAO dao;
 
   public AuthService(AuthDAO DAO) {
-    this.DAO=DAO;
+    this.dao=DAO;
   }
 
   public void clear() throws DataAccessException {
-    DAO.clear();
+    dao.clear();
   }
 
   public String makeAuth(String username) throws DataAccessException {
@@ -26,12 +26,12 @@ public class AuthService {
     }
     String token=UUID.randomUUID().toString();
     AuthData authData=new AuthData(token, username);
-    DAO.createAuthData(authData);
+    dao.createAuthData(authData);
     return token;
   }
 
   public String makeAuth(RegisterRequest registerRequest) throws DataAccessException {
-    return makeAuth(registerRequest.getUsername());
+    return makeAuth(registerRequest.username());
   }
 
   public String makeAuth(LoginRequest loginRequest) throws DataAccessException {
@@ -39,11 +39,11 @@ public class AuthService {
   }
 
   public void logout(String token) throws DataAccessException {
-    DAO.deleteAuthData(token);
+    dao.deleteAuthData(token);
   }
 
   public boolean authenticate(String token) throws DataAccessException {
-    if (DAO.checkAuthData(token)) {
+    if (dao.checkAuthData(token)) {
       return true;
     } else {
       throw new DataAccessException("Error: unauthorized");

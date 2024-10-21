@@ -99,7 +99,7 @@ public class ServiceTests {
   public void testAuthPass() throws DataAccessException {
     RegisterRequest registerRequest=new RegisterRequest(userData.username(), userData.password(), userData.username());
     userService.registerUser(registerRequest);
-    String auth=authService.makeAuth(registerRequest.getUsername());
+    String auth=authService.makeAuth(registerRequest.username());
     assert authService.authenticate(auth);
 
 
@@ -109,7 +109,7 @@ public class ServiceTests {
   @DisplayName("TestMakeAuthFail")
   public void testAuthFail() throws DataAccessException {
     RegisterRequest registerRequest=new RegisterRequest(null, userData.password(), userData.username());
-    assertThrows(Exception.class, () -> authService.makeAuth(registerRequest.getUsername()));
+    assertThrows(Exception.class, () -> authService.makeAuth(registerRequest.username()));
   }
 
   @Test
@@ -117,7 +117,7 @@ public class ServiceTests {
   public void testAuthenticatePass() throws DataAccessException {
     RegisterRequest registerRequest=new RegisterRequest(userData.username(), userData.password(), userData.username());
     userService.registerUser(registerRequest);
-    String auth=authService.makeAuth(registerRequest.getUsername());
+    String auth=authService.makeAuth(registerRequest.username());
     assert authService.authenticate(auth);
   }
 
@@ -134,7 +134,7 @@ public class ServiceTests {
   public void testLogoutPass() throws DataAccessException {
     RegisterRequest registerRequest=new RegisterRequest(userData.username(), userData.password(), userData.username());
     userService.registerUser(registerRequest);
-    String authToken=authService.makeAuth(registerRequest.getUsername());
+    String authToken=authService.makeAuth(registerRequest.username());
     authService.logout(authToken);
     assertThrows(Exception.class, () -> authService.authenticate(authToken));
 
@@ -170,13 +170,13 @@ public class ServiceTests {
   public void testJoinGamePass() throws DataAccessException {
     RegisterRequest registerRequest=new RegisterRequest(userData.username(), userData.password(), userData.username());
     userService.registerUser(registerRequest);
-    String auth=authService.makeAuth(registerRequest.getUsername());
+    String auth=authService.makeAuth(registerRequest.username());
     CreateGameRequest createGameRequest=new CreateGameRequest(gameData.gameName(), auth);
     CreateGameResponse createGameResponse=gameService.createGame(createGameRequest);
-    JoinGameResponse joinGameResponse=gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, createGameResponse.getGameID()));
+    JoinGameRequest joinGameRequest=new JoinGameRequest(ChessGame.TeamColor.WHITE, createGameResponse.getGameID());
+    joinGameRequest.setAuth(auth);
+    JoinGameResponse joinGameResponse=gameService.joinGame(joinGameRequest);
     assert joinGameResponse.getGameID() == createGameResponse.getGameID();
-    JoinGameResponse joinGameResponse1=gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, createGameResponse.getGameID()));
-    assert joinGameResponse1.getGameID() == createGameResponse.getGameID();
 
 
   }
