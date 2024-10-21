@@ -3,8 +3,10 @@ package server;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dataaccess.*;
+import requests.CreateGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
+import responses.CreateGameResponse;
 import responses.LoginResponse;
 import responses.RegisterResponse;
 import service.AuthService;
@@ -39,6 +41,8 @@ public class Server {
     Spark.delete("/db", this::clear);
     Spark.post("/user", this::register);
     Spark.post("/session", this::login);
+    Spark.delete("/session", this::logout);
+    Spark.post("/game", this::createGame);
 
     //This line initializes the server and can be removed once you have a functioning endpoint
     Spark.init();
@@ -104,6 +108,62 @@ public class Server {
         error.addProperty("error", "Login");
         error.addProperty("message", e.getMessage());
         return new Gson().toJson(error);
+      }
+    }
+  }
+
+  private Object logout(Request req, Response res) throws DataAccessException {
+    try {
+      authService.logout(req.headers("Authorization"));
+      return "{}";
+    } catch (Exception e) {
+      if (e.getMessage().equals("Error: unauthorized")) {
+        res.status(401);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "Logout");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+      } else {
+        res.status(500);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "Logout");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+
+      }
+    }
+  }
+
+  public Object createGame(Request req, Response res) throws DataAccessException {
+    try {
+      String auth=req.headers("Authorization");
+      var createGameReq=new Gson().fromJson(req.body(), CreateGameRequest.class);
+      CreateGameResponse createGameResp=gameService.createGame(createGameReq);
+      authService.authenticate(auth);
+      return new Gson().toJson(createGameResp);
+
+    } catch (DataAccessException e) {
+
+      if (e.getMessage().equals("Error: bad request")) {
+        res.status(400);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "CreateGame Bad Request");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+      } else if (e.getMessage().equals("Error: unauthorized")) {
+        res.status(401);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "CreateGame");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+
+      } else {
+        res.status(500);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "CreateGame");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+
       }
     }
   }

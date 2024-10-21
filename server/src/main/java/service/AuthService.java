@@ -46,7 +46,7 @@ public class AuthService {
     if (DAO.checkAuthData(token)) {
       return true;
     } else {
-      throw new DataAccessException("User is unauthorized");
+      throw new DataAccessException("Error: unauthorized");
     }
   }
 

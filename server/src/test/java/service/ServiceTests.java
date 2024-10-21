@@ -17,7 +17,6 @@ import requests.LoginRequest;
 import requests.RegisterRequest;
 import responses.CreateGameResponse;
 import responses.JoinGameResponse;
-import responses.RegisterResponse;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -156,7 +155,7 @@ public class ServiceTests {
   public void testCreateGamePass() throws DataAccessException {
     CreateGameRequest createGameRequest=new CreateGameRequest(userData.username(), null);
     CreateGameResponse createGameResponse=gameService.createGame(createGameRequest);
-    assert createGameResponse.getGameId() == gameService.generateGameID(createGameRequest.getName());
+    assert createGameResponse.getGameId() == gameService.generateGameID(createGameRequest.getGameName());
   }
 
   @Test

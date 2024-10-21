@@ -1,16 +1,16 @@
 package requests;
 
 public class CreateGameRequest {
-  private final String name;
+  private final String gameName;
   private String authToken;
 
   public CreateGameRequest(String name, String authToken) {
-    this.name=name;
+    this.gameName=name;
     this.authToken=authToken;
   }
 
-  public String getName() {
-    return name;
+  public String getGameName() {
+    return gameName;
   }
 
   public String getAuthToken() {

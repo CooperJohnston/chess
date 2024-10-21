@@ -54,17 +54,17 @@ public class GameService {
   }
 
   public CreateGameResponse createGame(CreateGameRequest gameRequest) throws DataAccessException {
-    if (gameRequest.getName() == null || gameRequest.getName().isEmpty()) {
-      throw new DataAccessException("Error: Name cannot be empty");
+    if (gameRequest.getGameName() == null || gameRequest.getGameName().isEmpty()) {
+      throw new DataAccessException("Error: bad request");
     }
 
-    if (gameDAO.checkGame(gameRequest.getName())) {
-      throw new DataAccessException("Error: Game already exists");
+    if (gameDAO.checkGame(gameRequest.getGameName())) {
+      throw new DataAccessException("Error: already taken");
     }
     try {
 
-      int newID=generateGameID(gameRequest.getName());
-      GameData newGame=new GameData(newID, null, null, gameRequest.getName(), new ChessGame());
+      int newID=generateGameID(gameRequest.getGameName());
+      GameData newGame=new GameData(newID, null, null, gameRequest.getGameName(), new ChessGame());
       gameDAO.createGame(newGame);
       return new CreateGameResponse(newID, gameRequest.getAuthToken());
 

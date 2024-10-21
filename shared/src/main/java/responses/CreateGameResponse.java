@@ -1,16 +1,16 @@
 package responses;
 
 public class CreateGameResponse {
-  private final int gameId;
+  private final int gameID;
   private String auth;
 
   public CreateGameResponse(int gameId, String auth) {
-    this.gameId=gameId;
+    this.gameID=gameId;
     this.auth=auth;
   }
 
   public int getGameId() {
-    return gameId;
+    return gameID;
   }
 
   public String getAuth() {

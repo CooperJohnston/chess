@@ -42,7 +42,7 @@ public class MemoryAuthDAO implements AuthDAO {
       authData.remove(getAuthData(AutToken));
       return;
     }
-    throw new DataAccessException("You are not allowed to delete this auth data");
+    throw new DataAccessException("Error: unauthorized");
   }
 
   @Override
