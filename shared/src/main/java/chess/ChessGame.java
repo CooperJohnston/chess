@@ -202,6 +202,16 @@ public class ChessGame {
 
   }
 
+  private boolean canPieceAttackKing(ChessPiece piece, ChessPosition currPos, ChessPosition kingPos, ChessBoard board) {
+    Collection<ChessMove> potentialMoves=piece.pieceMoves(board, currPos);
+    for (ChessMove move : potentialMoves) {
+      if (move.getEndPosition().equals(kingPos)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Determines if the given team is in check
    *
@@ -210,24 +220,23 @@ public class ChessGame {
    */
   public boolean isInCheck(TeamColor teamColor) {
     ChessPosition klocation=(teamColor == TeamColor.WHITE) ? board.whiteKing : board.blackKing;
-    // loop through and find all the moves of all the WHITE or Black pieces
-    // if any of them have a move, check to see if it points to the king
     if (klocation == null) {
       klocation=board.getKing(teamColor);
     }
     for (int i=1; i <= 8; i++) {
       for (int j=1; j <= 8; j++) {
         ChessPosition curr=new ChessPosition(i, j);
-        if (board.getPiece(curr) != null && board.getPiece(curr).getTeamColor() != teamColor) {
-          Collection<ChessMove> tempMoves=board.getPiece(curr).pieceMoves(board, curr);
-          for (ChessMove move : tempMoves) {
-            if (move.getEndPosition().equals(klocation)) {
-              return true;
-            }
-          }
+        ChessPiece piece=board.getPiece(curr);
+        if (piece == null || piece.getTeamColor() == teamColor) {
+          continue;
+        }
+        if (canPieceAttackKing(piece, curr, klocation, board)) {
+          return true;
         }
       }
     }
+
+
     return false;
   }
 
