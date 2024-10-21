@@ -1,30 +1,40 @@
 package requests;
 
+import chess.ChessGame;
+
 public class JoinGameRequest {
 
-  private final String playerColor;
-  private String auth;
-  private final int ID;
+  private final ChessGame.TeamColor playerColor;
+  private String authToken;
+  private final int gameID;
 
-  public JoinGameRequest(String playerColor, String auth, int ID) {
+  public JoinGameRequest(ChessGame.TeamColor playerColor, int ID) {
     this.playerColor=playerColor;
-    this.auth=auth;
-    this.ID=ID;
+    this.gameID=ID;
   }
 
-  public String getPlayerColor() {
+  public ChessGame.TeamColor getPlayerColor() {
     return playerColor;
   }
 
   public String getAuth() {
-    return auth;
+    return authToken;
+  }
+
+  @Override
+  public String toString() {
+    return "JoinGameRequest{" +
+            "playerColor='" + playerColor + '\'' +
+            ", authToken='" + authToken + '\'' +
+            ", ID=" + gameID +
+            '}';
   }
 
   public void setAuth(String authToken) {
-    this.auth=authToken;
+    this.authToken=authToken;
   }
 
-  public int getID() {
-    return ID;
+  public int getGameID() {
+    return gameID;
   }
 }

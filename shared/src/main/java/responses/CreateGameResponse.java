@@ -4,20 +4,27 @@ public class CreateGameResponse {
   private final int gameID;
   private String auth;
 
-  public CreateGameResponse(int gameId, String auth) {
+  public CreateGameResponse(int gameId) {
     this.gameID=gameId;
-    this.auth=auth;
   }
 
-  public int getGameId() {
+  public int getGameID() {
     return gameID;
   }
 
-  public String getAuth() {
+  public String getAuthToken() {
     return auth;
   }
 
-  public void setAuth(String auth) {
+  public void setAuthToken(String auth) {
     this.auth=auth;
+  }
+
+  @Override
+  public String toString() {
+    return "CreateGameResponse{" +
+            "gameID=" + gameID +
+            ", auth='" + auth + '\'' +
+            '}';
   }
 }

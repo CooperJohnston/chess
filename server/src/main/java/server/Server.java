@@ -4,12 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dataaccess.*;
 import requests.CreateGameRequest;
+import requests.JoinGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
-import responses.CreateGameResponse;
-import responses.ListGameResponse;
-import responses.LoginResponse;
-import responses.RegisterResponse;
+import responses.*;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
@@ -135,7 +133,7 @@ public class Server {
     }
   }
 
-  public Object createGame(Request req, Response res) throws DataAccessException {
+  private Object createGame(Request req, Response res) throws DataAccessException {
     try {
       String auth=req.headers("Authorization");
       var createGameReq=new Gson().fromJson(req.body(), CreateGameRequest.class);
@@ -169,7 +167,7 @@ public class Server {
     }
   }
 
-  public Object listGames(Request req, Response res) throws DataAccessException {
+  private Object listGames(Request req, Response res) throws DataAccessException {
     try {
       String Auth=req.headers("Authorization");
       ListGameResponse listGameResponse=new ListGameResponse(gameService.getAllGames());
@@ -187,6 +185,44 @@ public class Server {
         res.status(500);
         JsonObject error=new JsonObject();
         error.addProperty("error", "ListGames");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+      }
+    }
+  }
+
+  private Object joinGame(Request req, Response res) throws DataAccessException {
+    try {
+      String auth=req.headers("Authorization");
+      var joinGameReq=new Gson().fromJson(req.body(), JoinGameRequest.class);
+      String charles=req.body();
+      joinGameReq.setAuth(auth);
+      authService.authenticate(auth);
+      JoinGameResponse joinGameResp=gameService.joinGame(joinGameReq);
+      return new Gson().toJson(joinGameResp);
+    } catch (DataAccessException e) {
+      if (e.getMessage().equals("Error: unauthorized")) {
+        res.status(401);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "JoinGame");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+      } else if (e.getMessage().equals("Error: already taken")) {
+        res.status(403);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "JoinGame");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+      } else if (e.getMessage().equals("Error: bad request")) {
+        res.status(400);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "JoinGame");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+      } else {
+        res.status(500);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "JoinGame");
         error.addProperty("message", e.getMessage());
         return new Gson().toJson(error);
       }

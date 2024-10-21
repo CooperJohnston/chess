@@ -155,7 +155,7 @@ public class ServiceTests {
   public void testCreateGamePass() throws DataAccessException {
     CreateGameRequest createGameRequest=new CreateGameRequest(userData.username(), null);
     CreateGameResponse createGameResponse=gameService.createGame(createGameRequest);
-    assert createGameResponse.getGameId() == gameService.generateGameID(createGameRequest.getGameName());
+    assert createGameResponse.getGameID() == gameService.generateGameID(createGameRequest.getGameName());
   }
 
   @Test
@@ -173,10 +173,10 @@ public class ServiceTests {
     String auth=authService.makeAuth(registerRequest.getUsername());
     CreateGameRequest createGameRequest=new CreateGameRequest(gameData.gameName(), auth);
     CreateGameResponse createGameResponse=gameService.createGame(createGameRequest);
-    JoinGameResponse joinGameResponse=gameService.joinGame(new JoinGameRequest("WHITE", createGameResponse.getAuth(), createGameResponse.getGameId()));
-    assert joinGameResponse.getID() == createGameResponse.getGameId();
-    JoinGameResponse joinGameResponse1=gameService.joinGame(new JoinGameRequest("BLACK", createGameResponse.getAuth(), createGameResponse.getGameId()));
-    assert joinGameResponse1.getID() == createGameResponse.getGameId();
+    JoinGameResponse joinGameResponse=gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, createGameResponse.getGameID()));
+    assert joinGameResponse.getGameID() == createGameResponse.getGameID();
+    JoinGameResponse joinGameResponse1=gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, createGameResponse.getGameID()));
+    assert joinGameResponse1.getGameID() == createGameResponse.getGameID();
 
 
   }
@@ -187,7 +187,7 @@ public class ServiceTests {
   public void testJoinGameFail() throws DataAccessException {
     CreateGameRequest createGameRequest=new CreateGameRequest(userData.username(), null);
     CreateGameResponse createGameResponse=gameService.createGame(createGameRequest);
-    JoinGameRequest joinGameRequest=new JoinGameRequest("WHITE", createGameResponse.getAuth(), createGameResponse.getGameId());
+    JoinGameRequest joinGameRequest=new JoinGameRequest(ChessGame.TeamColor.WHITE, createGameResponse.getGameID());
     assertThrows(Exception.class, () -> gameService.joinGame(joinGameRequest));
 
   }

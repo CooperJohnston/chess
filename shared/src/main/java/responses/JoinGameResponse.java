@@ -1,21 +1,23 @@
 package responses;
 
+import chess.ChessGame;
+
 public class JoinGameResponse {
-  private final int ID;
-  private final String name;
+  private final int gameID;
+  private final ChessGame.TeamColor name;
   private String auth;
 
-  public JoinGameResponse(int ID, String name, String auth) {
-    this.ID=ID;
-    this.name=name;
-    this.auth=auth;
+  public JoinGameResponse(int gameID, ChessGame.TeamColor playerColor) {
+    this.gameID=gameID;
+    this.name=playerColor;
+
   }
 
-  public int getID() {
-    return ID;
+  public int getGameID() {
+    return gameID;
   }
 
-  public String getName() {
+  public ChessGame.TeamColor playerColor() {
     return name;
   }
 
