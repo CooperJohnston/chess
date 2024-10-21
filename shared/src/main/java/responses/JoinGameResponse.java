@@ -17,10 +17,6 @@ public class JoinGameResponse {
     return gameID;
   }
 
-  public ChessGame.TeamColor playerColor() {
-    return name;
-  }
-
   public String getAuth() {
     return auth;
   }

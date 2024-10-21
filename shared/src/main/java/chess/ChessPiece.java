@@ -88,7 +88,7 @@ public class ChessPiece {
   private static int[][] kingDirections={{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
   private static int[][] knightDirections={{2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
 
-  private static final Map<PieceType, int[][]> directionMap=Map.of(
+  private static final Map<PieceType, int[][]> DIRECTION_MAP=Map.of(
           ChessPiece.PieceType.ROOK, rookDirections,
           ChessPiece.PieceType.BISHOP, bishopDirections,
           ChessPiece.PieceType.QUEEN, kingDirections,
@@ -170,7 +170,7 @@ public class ChessPiece {
       }
       return moves;
     }
-    int[][] directions=directionMap.get(pieceType);
+    int[][] directions=DIRECTION_MAP.get(pieceType);
     for (int[] dir : directions) {
       int rowOffset=dir[0];
       int colOffset=dir[1];
