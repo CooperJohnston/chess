@@ -7,6 +7,7 @@ import requests.CreateGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
 import responses.CreateGameResponse;
+import responses.ListGameResponse;
 import responses.LoginResponse;
 import responses.RegisterResponse;
 import service.AuthService;
@@ -43,9 +44,9 @@ public class Server {
     Spark.post("/session", this::login);
     Spark.delete("/session", this::logout);
     Spark.post("/game", this::createGame);
+    Spark.get("/game", this::listGames);
+    Spark.put("/game", this::joinGame);
 
-    //This line initializes the server and can be removed once you have a functioning endpoint
-    Spark.init();
 
     Spark.awaitInitialization();
     return Spark.port();
@@ -167,6 +168,31 @@ public class Server {
       }
     }
   }
+
+  public Object listGames(Request req, Response res) throws DataAccessException {
+    try {
+      String Auth=req.headers("Authorization");
+      ListGameResponse listGameResponse=new ListGameResponse(gameService.getAllGames());
+      authService.authenticate(Auth);
+      return new Gson().toJson(listGameResponse);
+
+    } catch (DataAccessException e) {
+      if (e.getMessage().equals("Error: unauthorized")) {
+        res.status(401);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "ListGames");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+      } else {
+        res.status(500);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "ListGames");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+      }
+    }
+  }
+
 
   public void stop() {
     Spark.stop();
