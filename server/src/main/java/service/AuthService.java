@@ -12,8 +12,8 @@ public class AuthService {
 
   private final AuthDAO dao;
 
-  public AuthService(AuthDAO DAO) {
-    this.dao=DAO;
+  public AuthService(AuthDAO dao) {
+    this.dao=dao;
   }
 
   public void clear() throws DataAccessException {

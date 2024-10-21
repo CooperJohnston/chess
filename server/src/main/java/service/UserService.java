@@ -11,8 +11,8 @@ import responses.RegisterResponse;
 public class UserService {
   private final UserDAO dao;
 
-  public UserService(UserDAO DAO) {
-    this.dao=DAO;
+  public UserService(UserDAO dao) {
+    this.dao=dao;
   }
 
   public void clear() throws DataAccessException {

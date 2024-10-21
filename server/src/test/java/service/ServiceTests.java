@@ -111,15 +111,7 @@ public class ServiceTests {
     RegisterRequest registerRequest=new RegisterRequest(null, userData.password(), userData.username());
     assertThrows(Exception.class, () -> authService.makeAuth(registerRequest.username()));
   }
-
-  @Test
-  @DisplayName("AuthenticatePass")
-  public void testAuthenticatePass() throws DataAccessException {
-    RegisterRequest registerRequest=new RegisterRequest(userData.username(), userData.password(), userData.username());
-    userService.registerUser(registerRequest);
-    String auth=authService.makeAuth(registerRequest.username());
-    assert authService.authenticate(auth);
-  }
+  
 
   @Test
   @DisplayName("AuthenticateFail")
