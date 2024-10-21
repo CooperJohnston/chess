@@ -172,11 +172,7 @@ public class ChessPiece {
         boolean isPromotionRow=(diagRow == 8 || diagRow == 1);
 
         if (isPromotionRow) {
-          for (ChessPiece.PieceType pieceType : ChessPiece.PieceType.values()) {
-            if (pieceType != ChessPiece.PieceType.PAWN && pieceType != ChessPiece.PieceType.KING) {
-              moves.add(new ChessMove(myPosition, diagonalPos, pieceType));
-            }
-          }
+          addPromotionPieces(moves, myPosition, diagonalPos);
         } else {
           moves.add(new ChessMove(myPosition, diagonalPos, null));
         }
@@ -232,6 +228,15 @@ public class ChessPiece {
     return dupe;
 
   }
+
+  private void addPromotionPieces(Collection<ChessMove> moves, ChessPosition myPosition, ChessPosition diagonalPos) {
+    for (ChessPiece.PieceType pieceType : ChessPiece.PieceType.values()) {
+      if (pieceType != ChessPiece.PieceType.PAWN && pieceType != ChessPiece.PieceType.KING) {
+        moves.add(new ChessMove(myPosition, diagonalPos, pieceType));
+      }
+    }
+  }
+
 
   public void promote(ChessPiece.PieceType pieceType) {
     this.pieceType=pieceType;
