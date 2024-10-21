@@ -2,16 +2,28 @@ package responses;
 
 public class RegisterResponse {
 
-  private String auth;
+  private String authToken;
   private String username;
 
   public RegisterResponse(String auth, String username) {
-    this.auth=auth;
+    this.authToken=auth;
     this.username=username;
   }
 
-  public String getAuth() {
-    return auth;
+  public String getAuthToken() {
+    return authToken;
+  }
+
+  @Override
+  public String toString() {
+    return "RegisterResponse{" +
+            "auth='" + authToken + '\'' +
+            ", username='" + username + '\'' +
+            '}';
+  }
+
+  public void setAuth(String authToken) {
+    this.authToken=authToken;
   }
 
   public String getUsername() {

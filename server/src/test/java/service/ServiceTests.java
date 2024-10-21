@@ -46,11 +46,7 @@ public class ServiceTests {
   @Test
   @DisplayName("Service Clear")
   public void testClear() {
-    memoryAuthDAO=new MemoryAuthDAO();
-    memoryUserDAO=new MemoryUserDAO();
-    memoryGameDAO=new MemoryGameDAO();
 
-    //check setup of methods
     memoryAuthDAO.createAuthData(authData);
     memoryGameDAO.createGame(gameData);
     memoryUserDAO.insertUser(userData);

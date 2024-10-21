@@ -24,12 +24,12 @@ public class UserService {
     if (regRequest.getUsername() == null || regRequest.getUsername().isEmpty() ||
             regRequest.getPassword() == null || regRequest.getPassword().isEmpty() ||
             regRequest.getEmail() == null || regRequest.getEmail().isEmpty()) {
-      throw new DataAccessException("Username, password, and email are required");
+      throw new DataAccessException("Error: bad request");
     }
 
     UserData userData=new UserData(regRequest.getUsername(), regRequest.getPassword(), regRequest.getEmail());
     if (DAO.checkUser(userData)) {
-      throw new DataAccessException("User already exists in the database");
+      throw new DataAccessException("Error: already taken");
     }
 
     DAO.insertUser(userData);

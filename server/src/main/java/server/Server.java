@@ -1,25 +1,89 @@
 package server;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import dataaccess.*;
+import requests.RegisterRequest;
+import responses.RegisterResponse;
+import service.AuthService;
+import service.GameService;
+import service.UserService;
 import spark.*;
 
 public class Server {
+  private final UserService userService;
+  UserDAO userDAO;
+  private final AuthService authService;
+  AuthDAO authDAO;
+  private final GameService gameService;
+  GameDAO gameDAO;
 
-    public int run(int desiredPort) {
-        Spark.port(desiredPort);
+  public Server() {
+    authDAO=new MemoryAuthDAO();
+    gameDAO=new MemoryGameDAO();
+    userDAO=new MemoryUserDAO();
+    userService=new UserService(userDAO);
+    authService=new AuthService(authDAO);
+    gameService=new GameService(gameDAO, authDAO);
 
-        Spark.staticFiles.location("web");
+  }
 
-        // Register your endpoints and handle exceptions here.
+  public int run(int desiredPort) {
+    Spark.port(desiredPort);
 
-        //This line initializes the server and can be removed once you have a functioning endpoint 
-        Spark.init();
+    Spark.staticFiles.location("web");
 
-        Spark.awaitInitialization();
-        return Spark.port();
+    // Register your endpoints and handle exceptions here.
+    Spark.delete("/db", this::clear);
+    Spark.post("/user", this::register);
+
+    //This line initializes the server and can be removed once you have a functioning endpoint
+    Spark.init();
+
+    Spark.awaitInitialization();
+    return Spark.port();
+  }
+
+  private Object clear(Request req, Response res) throws DataAccessException {
+    userService.clear();
+    authService.clear();
+    gameService.clear();
+    return "{}";
+  }
+
+  private Object register(Request req, Response res) throws DataAccessException {
+    try {
+      var regReq=new Gson().fromJson(req.body(), RegisterRequest.class);
+      RegisterResponse regResp=userService.registerUser(regReq);
+      regResp.setAuth(authService.makeAuth(regReq));
+
+      return new Gson().toJson(regResp);
+    } catch (DataAccessException e) {
+      if (e.getMessage().equals("Error: bad request")) {
+        res.status(400);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "Register Bad Request");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+      } else if (e.getMessage().equals("Error: already taken")) {
+        res.status(403);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "Register");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+      } else {
+        res.status(500);
+        JsonObject error=new JsonObject();
+        error.addProperty("error", "Register");
+        error.addProperty("message", e.getMessage());
+        return new Gson().toJson(error);
+
+      }
     }
+  }
 
-    public void stop() {
-        Spark.stop();
-        Spark.awaitStop();
-    }
+  public void stop() {
+    Spark.stop();
+    Spark.awaitStop();
+  }
 }
