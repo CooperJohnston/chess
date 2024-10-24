@@ -241,7 +241,7 @@ public class ChessGame {
   }
 
   /**
-   * A helper method to check whether or not a team has valid moves
+   * A helper method to check whether a team has valid moves
    *
    * @param teamColor team to check out
    * @return boolean indicating result
