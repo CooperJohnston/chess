@@ -49,9 +49,45 @@ public class DatabaseManager {
   }
 
   private static final String[] createStatements={
-          "CREATE TABLE IF NOT EXISTS " + DATABASE_NAME + " ("
+          "CREATE TABLE IF NOT EXISTS UserData (" +
+                  "    username VARCHAR(255) NOT NULL," +
+                  "    password VARCHAR(255) NOT NULL," +
+                  "    email VARCHAR(255) NOT NULL," +
+                  "    PRIMARY KEY (username)" +
+                  ")" +
+                  "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
+
+          "CREATE TABLE IF NOT EXISTS GameData (" +
+                  "    gameID INT AUTO_INCREMENT NOT NULL," +
+                  "    whiteUsername VARCHAR(255)," +
+                  "    blackUsername VARCHAR(255)," +
+                  "    gameName VARCHAR(255) NOT NULL," +
+                  "    game TEXT NOT NULL," +
+                  "    PRIMARY KEY (gameID)" +
+                  ")" +
+                  "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
+
+          "CREATE TABLE IF NOT EXISTS AuthData (" +
+                  "    authToken VARCHAR(255)," +
+                  "    username VARCHAR(255) NOT NULL," +
+                  "    PRIMARY KEY (authToken)" +
+                  ")" +
+                  "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci"
   };
 
+  static void fillTables() throws DataAccessException {
+    createDatabase();
+    try (var con=getConnection()) {
+      for (var sqlStatement : createStatements) {
+        try (var preparedStatement=con.prepareStatement(sqlStatement)) {
+          preparedStatement.executeUpdate();
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DataAccessException(e.getMessage());
+    }
+  }
 
   /**
    * Create a connection to the database and sets the catalog based upon the
