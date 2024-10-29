@@ -22,12 +22,16 @@ public class Server {
   GameDAO gameDAO;
 
   public Server() {
-    authDAO=new MemoryAuthDAO();
-    gameDAO=new MemoryGameDAO();
-    userDAO=new MemoryUserDAO();
-    userService=new UserService(userDAO);
-    authService=new AuthService(authDAO);
-    gameService=new GameService(gameDAO, authDAO);
+    try {
+      authDAO=new DatabaseAuthDAO();
+      gameDAO=new DatabaseGameDAO();
+      userDAO=new DatabaseUserDAO();
+      userService=new UserService(userDAO);
+      authService=new AuthService(authDAO);
+      gameService=new GameService(gameDAO, authDAO);
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage());
+    }
 
   }
 
