@@ -58,12 +58,15 @@ public class DatabaseGameDAO implements GameDAO {
     return null;
   }
 
-  @Override
-  public boolean checkGame(int gameID) throws DataAccessException {
+
+  private boolean checkGameExists(String query, Object parameter) throws DataAccessException {
     try (Connection connection=DatabaseManager.getConnection()) {
-      String query="SELECT COUNT(*) AS count FROM GameData WHERE gameID = ?";
       try (PreparedStatement preparedStatement=connection.prepareStatement(query)) {
-        preparedStatement.setInt(1, gameID);
+        if (parameter instanceof Integer) {
+          preparedStatement.setInt(1, (Integer) parameter);
+        } else if (parameter instanceof String) {
+          preparedStatement.setString(1, (String) parameter);
+        }
         ResultSet resultSet=preparedStatement.executeQuery();
         if (resultSet.next()) {
           return resultSet.getInt("count") > 0;
@@ -76,21 +79,17 @@ public class DatabaseGameDAO implements GameDAO {
   }
 
   @Override
-  public boolean checkGame(String gameName) throws DataAccessException {
-    try (Connection connection=DatabaseManager.getConnection()) {
-      String query="SELECT COUNT(*) AS count FROM GameData WHERE gameName = ?";
-      try (PreparedStatement preparedStatement=connection.prepareStatement(query)) {
-        preparedStatement.setString(1, gameName);
-        ResultSet resultSet=preparedStatement.executeQuery();
-        if (resultSet.next()) {
-          return resultSet.getInt("count") > 0;
-        }
-      }
-    } catch (SQLException | DataAccessException e) {
-      throw new DataAccessException(e.getMessage());
-    }
-    return false;
+  public boolean checkGame(int gameID) throws DataAccessException {
+    String query="SELECT COUNT(*) AS count FROM GameData WHERE gameID = ?";
+    return checkGameExists(query, gameID);
   }
+
+  @Override
+  public boolean checkGame(String gameName) throws DataAccessException {
+    String query="SELECT COUNT(*) AS count FROM GameData WHERE gameName = ?";
+    return checkGameExists(query, gameName);
+  }
+
 
   @Override
   public void updateGame(GameData game) throws DataAccessException {
