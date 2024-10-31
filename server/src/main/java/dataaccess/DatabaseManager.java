@@ -48,7 +48,7 @@ public class DatabaseManager {
     }
   }
 
-  private static final String[] createStatements={
+  private static final String[] CREATE_STATEMENTS={
           "CREATE TABLE IF NOT EXISTS UserData (" +
                   "    username VARCHAR(255) NOT NULL," +
                   "    password VARCHAR(255) NOT NULL," +
@@ -78,7 +78,7 @@ public class DatabaseManager {
   static void fillTables() throws DataAccessException {
     createDatabase();
     try (var con=getConnection()) {
-      for (var sqlStatement : createStatements) {
+      for (var sqlStatement : CREATE_STATEMENTS) {
         try (var preparedStatement=con.prepareStatement(sqlStatement)) {
           preparedStatement.executeUpdate();
         }

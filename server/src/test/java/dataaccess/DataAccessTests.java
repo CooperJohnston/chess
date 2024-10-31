@@ -18,16 +18,16 @@ public class DataAccessTests {
   static GameService gameService;
   static UserService userService;
   static AuthService authService;
-  static final DatabaseAuthDAO authDAO;
-  static final DatabaseGameDAO gameDAO;
-  static final DatabaseUserDAO userDAO;
+  static final DatabaseAuthDAO AUTHDAO;
+  static final DatabaseGameDAO GAMEDAO;
+  static final DatabaseUserDAO USERDAO;
 
   static {
     try {
-      authDAO=new DatabaseAuthDAO();
-      gameDAO=new DatabaseGameDAO();
-      userDAO=new DatabaseUserDAO();
-      gameService=new GameService(gameDAO, authDAO);
+      AUTHDAO=new DatabaseAuthDAO();
+      GAMEDAO=new DatabaseGameDAO();
+      USERDAO=new DatabaseUserDAO();
+      gameService=new GameService(GAMEDAO, AUTHDAO);
 
     } catch (DataAccessException e) {
       throw new RuntimeException(e);
@@ -36,106 +36,106 @@ public class DataAccessTests {
 
   @BeforeEach
   public void clear() throws DataAccessException {
-    authDAO.clear();
-    gameDAO.clear();
-    userDAO.clear();
+    AUTHDAO.clear();
+    GAMEDAO.clear();
+    USERDAO.clear();
   }
 
   @Test
   public void createAuthPass() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
-    authDAO.createAuthData(authData);
-    assertNotNull(authDAO.getAuthData("testAuth"));
+    AUTHDAO.createAuthData(authData);
+    assertNotNull(AUTHDAO.getAuthData("testAuth"));
 
   }
 
   @Test
   public void createAuthFail() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
-    authDAO.createAuthData(authData);
-    assertThrows(Exception.class, () -> authDAO.createAuthData(authData));
+    AUTHDAO.createAuthData(authData);
+    assertThrows(Exception.class, () -> AUTHDAO.createAuthData(authData));
   }
 
   @Test
   public void getAuthDataPass() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
-    authDAO.createAuthData(authData);
-    AuthData result=authDAO.getAuthData("testAuth");
+    AUTHDAO.createAuthData(authData);
+    AuthData result=AUTHDAO.getAuthData("testAuth");
     assertNotNull(result);
   }
 
   @Test
   public void testGetAuthDataFail() throws DataAccessException {
-    assertNull(authDAO.getAuthData("poop"));
+    assertNull(AUTHDAO.getAuthData("poop"));
   }
 
   @Test
   public void testCheckAuthDataPass() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
-    authDAO.createAuthData(authData);
-    assertTrue(authDAO.checkAuthData("testAuth"));
+    AUTHDAO.createAuthData(authData);
+    assertTrue(AUTHDAO.checkAuthData("testAuth"));
   }
 
   @Test
   public void testCheckAuthDataFail() throws DataAccessException {
-    assertFalse(authDAO.checkAuthData("testAuth"));
+    assertFalse(AUTHDAO.checkAuthData("testAuth"));
   }
 
   @Test
   public void testDeleteAuthDataPass() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
-    authDAO.createAuthData(authData);
-    authDAO.deleteAuthData("testAuth");
-    assertNull(authDAO.getAuthData("testAuth"));
+    AUTHDAO.createAuthData(authData);
+    AUTHDAO.deleteAuthData("testAuth");
+    assertNull(AUTHDAO.getAuthData("testAuth"));
   }
 
   @Test
   public void testDeleteAuthDataFail() throws DataAccessException {
-    assertFalse(authDAO.checkAuthData("poop"));
+    assertFalse(AUTHDAO.checkAuthData("poop"));
   }
 
   @Test
   public void testClearAuthDataPass() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
-    authDAO.createAuthData(authData);
-    authDAO.clear();
-    assertNull(authDAO.getAuthData("testAuth"));
+    AUTHDAO.createAuthData(authData);
+    AUTHDAO.clear();
+    assertNull(AUTHDAO.getAuthData("testAuth"));
   }
 
   @Test
   public void testCreateGamePass() throws DataAccessException {
     GameData gameData=new GameData(1, null, null,
             "testName", new ChessGame());
-    gameDAO.createGame(gameData);
-    assertNotNull(gameDAO.getAllGames());
+    GAMEDAO.createGame(gameData);
+    assertNotNull(GAMEDAO.getAllGames());
   }
 
   @Test
   public void testCreateGameFail() {
-    assertThrows(Exception.class, () -> gameDAO.createGame(null));
+    assertThrows(Exception.class, () -> GAMEDAO.createGame(null));
   }
 
   @Test
   public void testGetGamePass() throws DataAccessException {
     GameData gameData=new GameData(1, null, null,
             "testName", new ChessGame());
-    gameDAO.createGame(gameData);
-    assertNotNull(gameDAO.getGame(1));
+    GAMEDAO.createGame(gameData);
+    assertNotNull(GAMEDAO.getGame(1));
 
   }
 
   @Test
   public void testGetGameFail() throws DataAccessException {
-    assertNull(gameDAO.getGame(1));
+    assertNull(GAMEDAO.getGame(1));
   }
 
   @Test
   public void testCLearGameData() throws DataAccessException {
     GameData gameData=new GameData(1, null, null,
             "testName", new ChessGame());
-    gameDAO.createGame(gameData);
-    gameDAO.clear();
-    assertNull(gameDAO.getGame(1));
+    GAMEDAO.createGame(gameData);
+    GAMEDAO.clear();
+    assertNull(GAMEDAO.getGame(1));
 
   }
 
@@ -143,25 +143,25 @@ public class DataAccessTests {
   public void testCheckGamePass() throws DataAccessException {
     GameData gameData=new GameData(1, null, null,
             "testName", new ChessGame());
-    gameDAO.createGame(gameData);
-    assertTrue(gameDAO.checkGame(1));
+    GAMEDAO.createGame(gameData);
+    assertTrue(GAMEDAO.checkGame(1));
 
   }
 
   @Test
   public void testCheckGameFail() throws DataAccessException {
-    assertFalse(gameDAO.checkGame(1));
+    assertFalse(GAMEDAO.checkGame(1));
   }
 
   @Test
   public void testUpdateGamePass() throws DataAccessException {
     GameData gameData=new GameData(1, null, null,
             "testName", new ChessGame());
-    gameDAO.createGame(gameData);
+    GAMEDAO.createGame(gameData);
     GameData updateGame=new GameData(1, "testUser",
             null, "testName", gameData.game());
-    gameDAO.updateGame(updateGame);
-    assertEquals(updateGame.whiteUsername(), gameDAO.getGame(1).whiteUsername());
+    GAMEDAO.updateGame(updateGame);
+    assertEquals(updateGame.whiteUsername(), GAMEDAO.getGame(1).whiteUsername());
 
 
   }
@@ -170,59 +170,59 @@ public class DataAccessTests {
   public void testUpdateGameFail() throws DataAccessException {
     GameData gameData=new GameData(1, null, null,
             "testName", new ChessGame());
-    gameDAO.createGame(gameData);
+    GAMEDAO.createGame(gameData);
     GameData updateGame=new GameData(500, "testUser",
             null, "testName", gameData.game());
-    assertThrows(Exception.class, () -> gameDAO.updateGame(updateGame));
+    assertThrows(Exception.class, () -> GAMEDAO.updateGame(updateGame));
   }
 
   @Test
   public void testCreateUserPass() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
-    userDAO.insertUser(userData);
-    assertNotNull(userDAO.getAllUsers());
+    USERDAO.insertUser(userData);
+    assertNotNull(USERDAO.getAllUsers());
   }
 
   @Test
   public void testCreateUserFail() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
-    userDAO.insertUser(userData);
-    assertThrows(Exception.class, () -> userDAO.insertUser(userData));
+    USERDAO.insertUser(userData);
+    assertThrows(Exception.class, () -> USERDAO.insertUser(userData));
   }
 
   @Test
   public void testCheckUserPass() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
-    userDAO.insertUser(userData);
-    assertTrue(userDAO.checkUser(userData));
+    USERDAO.insertUser(userData);
+    assertTrue(USERDAO.checkUser(userData));
   }
 
   @Test
   public void testCheckUserFail() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
-    assertFalse(userDAO.checkUser(userData));
+    assertFalse(USERDAO.checkUser(userData));
   }
 
   @Test
   public void testDeleteUserPass() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
-    userDAO.insertUser(userData);
-    userDAO.clear();
-    assertFalse(userDAO.checkUser(userData));
+    USERDAO.insertUser(userData);
+    USERDAO.clear();
+    assertFalse(USERDAO.checkUser(userData));
   }
 
   @Test
   public void testGetUserPass() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
-    userDAO.insertUser(userData);
-    UserData userData1=userDAO.getUser(userData);
+    USERDAO.insertUser(userData);
+    UserData userData1=USERDAO.getUser(userData);
     assert BCrypt.checkpw(userData.password(), userData1.password());
   }
 
   @Test
   public void testGetUserFail() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
-    assertNull(userDAO.getUser(userData));
+    assertNull(USERDAO.getUser(userData));
   }
 
 
