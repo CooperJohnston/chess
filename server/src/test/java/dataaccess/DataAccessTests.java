@@ -42,7 +42,7 @@ public class DataAccessTests {
   }
 
   @Test
-  public void testCreateAuth_Pass() throws DataAccessException {
+  public void createAuthPass() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
     authDAO.createAuthData(authData);
     assertNotNull(authDAO.getAuthData("testAuth"));
@@ -50,14 +50,14 @@ public class DataAccessTests {
   }
 
   @Test
-  public void testCreateAuth_Fail() throws DataAccessException {
+  public void createAuthFail() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
     authDAO.createAuthData(authData);
     assertThrows(Exception.class, () -> authDAO.createAuthData(authData));
   }
 
   @Test
-  public void testGetAuthData_Pass() throws DataAccessException {
+  public void getAuthDataPass() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
     authDAO.createAuthData(authData);
     AuthData result=authDAO.getAuthData("testAuth");
@@ -65,24 +65,24 @@ public class DataAccessTests {
   }
 
   @Test
-  public void testGetAuthData_Fail() throws DataAccessException {
+  public void testGetAuthDataFail() throws DataAccessException {
     assertNull(authDAO.getAuthData("poop"));
   }
 
   @Test
-  public void testCheckAuthData_Pass() throws DataAccessException {
+  public void testCheckAuthDataPass() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
     authDAO.createAuthData(authData);
     assertTrue(authDAO.checkAuthData("testAuth"));
   }
 
   @Test
-  public void testCheckAuthData_Fail() throws DataAccessException {
+  public void testCheckAuthDataFail() throws DataAccessException {
     assertFalse(authDAO.checkAuthData("testAuth"));
   }
 
   @Test
-  public void testDeleteAuthData_Pass() throws DataAccessException {
+  public void testDeleteAuthDataPass() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
     authDAO.createAuthData(authData);
     authDAO.deleteAuthData("testAuth");
@@ -90,12 +90,12 @@ public class DataAccessTests {
   }
 
   @Test
-  public void testDeleteAuthData_Fail() throws DataAccessException {
+  public void testDeleteAuthDataFail() throws DataAccessException {
     assertFalse(authDAO.checkAuthData("poop"));
   }
 
   @Test
-  public void testClearAuthData_Pass() throws DataAccessException {
+  public void testClearAuthDataPass() throws DataAccessException {
     AuthData authData=new AuthData("testAuth", "testUser");
     authDAO.createAuthData(authData);
     authDAO.clear();
@@ -103,7 +103,7 @@ public class DataAccessTests {
   }
 
   @Test
-  public void testCreateGame_Pass() throws DataAccessException {
+  public void testCreateGamePass() throws DataAccessException {
     GameData gameData=new GameData(1, null, null,
             "testName", new ChessGame());
     gameDAO.createGame(gameData);
@@ -111,12 +111,12 @@ public class DataAccessTests {
   }
 
   @Test
-  public void testCreateGame_Fail() {
+  public void testCreateGameFail() {
     assertThrows(Exception.class, () -> gameDAO.createGame(null));
   }
 
   @Test
-  public void testGetGame_Pass() throws DataAccessException {
+  public void testGetGamePass() throws DataAccessException {
     GameData gameData=new GameData(1, null, null,
             "testName", new ChessGame());
     gameDAO.createGame(gameData);
@@ -125,7 +125,7 @@ public class DataAccessTests {
   }
 
   @Test
-  public void testGetGame_Fail() throws DataAccessException {
+  public void testGetGameFail() throws DataAccessException {
     assertNull(gameDAO.getGame(1));
   }
 
@@ -140,7 +140,7 @@ public class DataAccessTests {
   }
 
   @Test
-  public void CheckGame_Pass() throws DataAccessException {
+  public void testCheckGamePass() throws DataAccessException {
     GameData gameData=new GameData(1, null, null,
             "testName", new ChessGame());
     gameDAO.createGame(gameData);
@@ -149,12 +149,12 @@ public class DataAccessTests {
   }
 
   @Test
-  public void CheckGame_Fail() throws DataAccessException {
+  public void testCheckGameFail() throws DataAccessException {
     assertFalse(gameDAO.checkGame(1));
   }
 
   @Test
-  public void UpdateGame_Pass() throws DataAccessException {
+  public void testUpdateGamePass() throws DataAccessException {
     GameData gameData=new GameData(1, null, null,
             "testName", new ChessGame());
     gameDAO.createGame(gameData);
@@ -167,7 +167,7 @@ public class DataAccessTests {
   }
 
   @Test
-  public void UpdateGame_Fail() throws DataAccessException {
+  public void testUpdateGameFail() throws DataAccessException {
     GameData gameData=new GameData(1, null, null,
             "testName", new ChessGame());
     gameDAO.createGame(gameData);
@@ -177,34 +177,34 @@ public class DataAccessTests {
   }
 
   @Test
-  public void CreateUser_Pass() throws DataAccessException {
+  public void testCreateUserPass() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
     userDAO.insertUser(userData);
     assertNotNull(userDAO.getAllUsers());
   }
 
   @Test
-  public void CreateUser_Fail() throws DataAccessException {
+  public void testCreateUserFail() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
     userDAO.insertUser(userData);
     assertThrows(Exception.class, () -> userDAO.insertUser(userData));
   }
 
   @Test
-  public void CheckUser_Pass() throws DataAccessException {
+  public void testCheckUserPass() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
     userDAO.insertUser(userData);
     assertTrue(userDAO.checkUser(userData));
   }
 
   @Test
-  public void CheckUser_Fail() throws DataAccessException {
+  public void testCheckUserFail() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
     assertFalse(userDAO.checkUser(userData));
   }
 
   @Test
-  public void DeleteUser_Pass() throws DataAccessException {
+  public void testDeleteUserPass() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
     userDAO.insertUser(userData);
     userDAO.clear();
@@ -212,7 +212,7 @@ public class DataAccessTests {
   }
 
   @Test
-  public void GetUser_Pass() throws DataAccessException {
+  public void testGetUserPass() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
     userDAO.insertUser(userData);
     UserData userData1=userDAO.getUser(userData);
@@ -220,7 +220,7 @@ public class DataAccessTests {
   }
 
   @Test
-  public void GetUser_Fail() throws DataAccessException {
+  public void testGetUserFail() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
     assertNull(userDAO.getUser(userData));
   }
