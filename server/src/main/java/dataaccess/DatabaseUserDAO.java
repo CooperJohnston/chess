@@ -51,7 +51,7 @@ public class DatabaseUserDAO implements UserDAO {
   @Override
   public boolean checkUser(UserData user) throws DataAccessException {
     try (Connection connection=DatabaseManager.getConnection()) {
-      String query="SELECT COUNT(*) FROM UserData WHERE username = ?";
+      String query="SELECT COUNT(*) AS count FROM UserData WHERE username = ?";
       try (PreparedStatement preparedStatement=connection.prepareStatement(query)) {
         preparedStatement.setString(1, user.username());
         ResultSet resultSet=preparedStatement.executeQuery();

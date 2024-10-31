@@ -199,7 +199,15 @@ public class DataAccessTests {
   @Test
   public void CheckUser_Fail() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
-    assertThrows(Exception.class, () -> userDAO.checkUser(userData));
+    assertFalse(userDAO.checkUser(userData));
+  }
+
+  @Test
+  public void DeleteUser_Pass() throws DataAccessException {
+    UserData userData=new UserData("testUser", "testPass", "testEmail");
+    userDAO.insertUser(userData);
+    userDAO.clear();
+    assertFalse(userDAO.checkUser(userData));
   }
 
 
