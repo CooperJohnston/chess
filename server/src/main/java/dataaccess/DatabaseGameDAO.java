@@ -61,7 +61,7 @@ public class DatabaseGameDAO implements GameDAO {
   @Override
   public boolean checkGame(int gameID) throws DataAccessException {
     try (Connection connection=DatabaseManager.getConnection()) {
-      String query="SELECT * FROM GameData WHERE gameID = ?";
+      String query="SELECT COUNT(*) AS count FROM GameData WHERE gameID = ?";
       try (PreparedStatement preparedStatement=connection.prepareStatement(query)) {
         preparedStatement.setInt(1, gameID);
         ResultSet resultSet=preparedStatement.executeQuery();
@@ -78,7 +78,7 @@ public class DatabaseGameDAO implements GameDAO {
   @Override
   public boolean checkGame(String gameName) throws DataAccessException {
     try (Connection connection=DatabaseManager.getConnection()) {
-      String query="SELECT * FROM GameData WHERE gameName = ?";
+      String query="SELECT COUNT(*) AS count FROM GameData WHERE gameName = ?";
       try (PreparedStatement preparedStatement=connection.prepareStatement(query)) {
         preparedStatement.setString(1, gameName);
         ResultSet resultSet=preparedStatement.executeQuery();

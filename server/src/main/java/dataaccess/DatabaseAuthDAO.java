@@ -24,7 +24,6 @@ public class DatabaseAuthDAO implements AuthDAO {
         preparedStatement.executeUpdate();
       }
     } catch (SQLException | DataAccessException e) {
-      e.printStackTrace();
       throw new DataAccessException("Error: SQL");
     }
 
