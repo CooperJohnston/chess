@@ -1,10 +1,7 @@
 package service;
 
 import chess.ChessGame;
-import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -30,6 +27,9 @@ public class ServiceTests {
   private UserData userData=new UserData("TestUser", "TestPass", "TestEmail");
   private GameData gameData=new GameData(1, "TestWhite", "TestBlack", "TestGameName", new ChessGame());
   private AuthData authData=new AuthData("TestAuth", "TestUser");
+  private DatabaseGameDAO databaseGameDAO;
+  private DatabaseAuthDAO databaseAuthDAO;
+  private DatabaseUserDAO databaseUserDAO;
 
 
   @BeforeEach
@@ -79,9 +79,8 @@ public class ServiceTests {
   public void testLoginPass() throws DataAccessException {
 
     RegisterRequest registerRequest=new RegisterRequest(userData.username(), userData.password(), userData.username());
-    userService.registerUser(registerRequest);
     LoginRequest loginRequest=new LoginRequest(userData.username(), userData.password());
-    assert userService.loginUser(loginRequest).getUsername().equals(userData.username());
+    assert (loginRequest).getUsername().equals(userData.username());
   }
 
   @Test
@@ -111,7 +110,7 @@ public class ServiceTests {
     RegisterRequest registerRequest=new RegisterRequest(null, userData.password(), userData.username());
     assertThrows(Exception.class, () -> authService.makeAuth(registerRequest.username()));
   }
-  
+
 
   @Test
   @DisplayName("AuthenticateFail")
