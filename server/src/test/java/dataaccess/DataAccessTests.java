@@ -210,5 +210,18 @@ public class DataAccessTests {
     assertFalse(userDAO.checkUser(userData));
   }
 
+  @Test
+  public void GetUser_Pass() throws DataAccessException {
+    UserData userData=new UserData("testUser", "testPass", "testEmail");
+    userDAO.insertUser(userData);
+    assert userDAO.getUser(userData).equals(userData);
+  }
+
+  @Test
+  public void GetUser_Fail() throws DataAccessException {
+    UserData userData=new UserData("testUser", "testPass", "testEmail");
+    assertNull(userDAO.getUser(userData));
+  }
+
 
 }
