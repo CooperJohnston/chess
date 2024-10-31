@@ -6,6 +6,7 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
@@ -214,7 +215,8 @@ public class DataAccessTests {
   public void GetUser_Pass() throws DataAccessException {
     UserData userData=new UserData("testUser", "testPass", "testEmail");
     userDAO.insertUser(userData);
-    assert userDAO.getUser(userData).equals(userData);
+    UserData userData1=userDAO.getUser(userData);
+    assert BCrypt.checkpw(userData.password(), userData1.password());
   }
 
   @Test
