@@ -79,8 +79,9 @@ public class ServiceTests {
   public void testLoginPass() throws DataAccessException {
 
     RegisterRequest registerRequest=new RegisterRequest(userData.username(), userData.password(), userData.username());
+    userService.registerUser(registerRequest);
     LoginRequest loginRequest=new LoginRequest(userData.username(), userData.password());
-    assert (loginRequest).getUsername().equals(userData.username());
+    assert loginRequest.getUsername() == registerRequest.username();
   }
 
   @Test

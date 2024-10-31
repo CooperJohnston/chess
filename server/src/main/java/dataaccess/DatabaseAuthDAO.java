@@ -66,7 +66,7 @@ public class DatabaseAuthDAO implements AuthDAO {
   @Override
   public void deleteAuthData(String autToken) throws DataAccessException {
     if (!checkAuthData(autToken)) {
-      throw new DataAccessException("Error: unauthorized access");
+      throw new DataAccessException("Error: unauthorized");
     }
     try (Connection connection=DatabaseManager.getConnection()) {
       String query="DELETE FROM AuthData WHERE authToken = ?";
