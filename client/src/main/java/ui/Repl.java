@@ -3,14 +3,16 @@ package ui;
 import java.util.Scanner;
 
 public class Repl {
-  private final Client client;
+  //private final Client client;
 
   public Repl(String url) {
-    client=new Client(url);
+    //client=new Client(url);
   }
 
   public void run() {
-    System.out.println("Welcome to Chess.");
+    ChessIllustrator chess=new ChessIllustrator();
+    chess.beginGame();
+    /*System.out.println("Welcome to Chess.");
     System.out.print(client.help());
 
     Scanner scanner=new Scanner(System.in);
@@ -27,7 +29,7 @@ public class Repl {
         System.out.print(msg);
       }
     }
-    System.out.println();
+    System.out.println();*/
   }
 
 
