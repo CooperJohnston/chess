@@ -16,95 +16,163 @@ public class ChessIllustrator {
   public void beginGame() {
     outStream.print(ERASE_SCREEN);
     String[][] chessBoard=init();
-    drawHeaders();
-    drawBoard(chessBoard);
+    drawBoard(reverseBoard(chessBoard), false);
+    outStream.println();
+    drawBoard(chessBoard, true);
 
+  }
 
+  private String[][] reverseBoard(String[][] board) {
+    String[][] reversedBoard=new String[8][8];
+    for (int i=0; i < 8; i++) {
+      reversedBoard[i]=board[7 - i];
+    }
+    return reversedBoard;
+  }
+
+  private String center(String text, int width) {
+    int padding=(width - text.length()) / 2;
+    String format="%" + padding + "s%s%" + padding + "s";
+    return String.format(format, "", text, "");
   }
 
   private String[][] init() {
     String[][] board=new String[8][8];
     int width=5;
-    String format="%" + width + "s";
 
-    board[0]=new String[]{
-            String.format(format, WHITE_ROOK),
-            String.format(format, WHITE_KNIGHT),
-            String.format(format, WHITE_BISHOP),
-            String.format(format, WHITE_QUEEN),
-            String.format(format, WHITE_KING),
-            String.format(format, WHITE_BISHOP),
-            String.format(format, WHITE_KNIGHT),
-            String.format(format, WHITE_ROOK)
+    board[7]=new String[]{
+            center(WHITE_ROOK, width),
+            center(WHITE_KNIGHT, width),
+            center(WHITE_BISHOP, width),
+            center(WHITE_QUEEN, width),
+            center(WHITE_KING, width),
+            center(WHITE_BISHOP, width),
+            center(WHITE_KNIGHT, width),
+            center(WHITE_ROOK, width)
     };
 
-    board[1]=new String[]{
-            String.format(format, WHITE_PAWN),
-            String.format(format, WHITE_PAWN),
-            String.format(format, WHITE_PAWN),
-            String.format(format, WHITE_PAWN),
-            String.format(format, WHITE_PAWN),
-            String.format(format, WHITE_PAWN),
-            String.format(format, WHITE_PAWN),
-            String.format(format, WHITE_PAWN)
+    board[6]=new String[]{
+            center(WHITE_PAWN, width),
+            center(WHITE_PAWN, width),
+            center(WHITE_PAWN, width),
+            center(WHITE_PAWN, width),
+            center(WHITE_PAWN, width),
+            center(WHITE_PAWN, width),
+            center(WHITE_PAWN, width),
+            center(WHITE_PAWN, width)
     };
 
     for (int i=2; i < 6; i++) {
-      board[i]=new String[]{String.format(format, EMPTY), String.format(format, EMPTY),
-              String.format(format, EMPTY), String.format(format, EMPTY), String.format(format, EMPTY),
-              String.format(format, EMPTY), String.format(format, EMPTY), String.format(format, EMPTY)};
+      board[i]=new String[]{center(EMPTY, width), center(EMPTY, width),
+              center(EMPTY, width), center(EMPTY, width), center(EMPTY, width),
+              center(EMPTY, width), center(EMPTY, width), center(EMPTY, width)};
     }
 
-    board[6]=new String[]{
-            String.format(format, BLACK_PAWN),
-            String.format(format, BLACK_PAWN),
-            String.format(format, BLACK_PAWN),
-            String.format(format, BLACK_PAWN),
-            String.format(format, BLACK_PAWN),
-            String.format(format, BLACK_PAWN),
-            String.format(format, BLACK_PAWN),
-            String.format(format, BLACK_PAWN)
+    board[0]=new String[]{
+            center(BLACK_PAWN, width),
+            center(BLACK_PAWN, width),
+            center(BLACK_PAWN, width),
+            center(BLACK_PAWN, width),
+            center(BLACK_PAWN, width),
+            center(BLACK_PAWN, width),
+            center(BLACK_PAWN, width),
+            center(BLACK_PAWN, width)
     };
 
-    board[7]=new String[]{
-            String.format(format, BLACK_ROOK),
-            String.format(format, BLACK_KNIGHT),
-            String.format(format, BLACK_BISHOP),
-            String.format(format, BLACK_QUEEN),
-            String.format(format, BLACK_KING),
-            String.format(format, BLACK_BISHOP),
-            String.format(format, BLACK_KNIGHT),
-            String.format(format, BLACK_ROOK)
+    board[1]=new String[]{
+            center(BLACK_ROOK, width),
+            center(BLACK_KNIGHT, width),
+            center(BLACK_BISHOP, width),
+            center(BLACK_QUEEN, width),
+            center(BLACK_KING, width),
+            center(BLACK_BISHOP, width),
+            center(BLACK_KNIGHT, width),
+            center(BLACK_ROOK, width)
     };
 
     return board;
   }
 
 
-  public void drawHeaders() {
-    int width=3;
-    String format="%" + width + "s";
+  public void drawHeaders(boolean isWhiteView) {
+    int width=5;
     String[] headers=new String[]{
-            String.format(format, EMPTY), String.format(format, "a"), String.format(format, "b"),
-            String.format(format, "c"), String.format(format, "d"), String.format(format, "e"),
-            String.format(format, "f"), String.format(format, "g"), String.format(format, "h"), String.format(format, EMPTY)};
+            center(EMPTY, width), center("a", width), center("b", width),
+            center("c", width), center("d", width), center("e", width),
+            center("f", width), center("g", width), center("h", width), center(EMPTY, width)
+    };
+
+    // Reverse headers for "BLACK VIEW"
+    if (!isWhiteView) {
+      headers=reverseArray(headers);
+    }
+
     outStream.print(SET_BG_COLOR_BLUE);
     outStream.print(SET_TEXT_COLOR_WHITE);
     for (String header : headers) {
       outStream.print(header);
     }
+    outStream.print(RESET_BG_COLOR);
+    outStream.println();
+  }
+
+  // Utility method to reverse the headers array
+  private String[] reverseArray(String[] array) {
+    String[] reversedArray=new String[array.length];
+    for (int i=0; i < array.length; i++) {
+      reversedArray[i]=array[array.length - 1 - i];
+    }
+    return reversedArray;
+  }
+
+
+  public void drawBoard(String[][] board, boolean isWhiteView) {
+
+    outStream.print(SET_BG_COLOR_BLUE);
+
+    outStream.print(SET_TEXT_COLOR_WHITE);
+    drawHeaders(isWhiteView);
+    boolean startYellow=true;
+    int rowNumber=isWhiteView ? 8 : 1;  // Start row numbering based on view
+    int rowIncrement=isWhiteView ? -1 : 1; // Decrement for White, increment for Black
+
+    for (String[] row : board) {
+      drawRow(row, startYellow, rowNumber);
+      startYellow=!startYellow;
+      rowNumber+=rowIncrement; // Adjust row number based on view
+    }
+    drawHeaders(isWhiteView);
+
 
   }
 
-  public void drawBoard(String[][] board) {
+  public void drawRow(String[] row, boolean startYellow, int rowNumber) {
     outStream.print(SET_BG_COLOR_BLUE);
-    outStream.print(SET_TEXT_COLOR_WHITE);
-    for (String[] header : board) {
 
-      for (String line : header) {
-        outStream.println(line);
+    outStream.print(SET_TEXT_COLOR_WHITE);
+    int width=5;
+    String format="%" + width + "s";
+    outStream.print(center(String.valueOf(rowNumber), width));
+    boolean isYellow=startYellow;
+    for (String space : row) {
+      if (isYellow) {
+        outStream.print(SET_BG_COLOR_YELLOW);
+        outStream.print(SET_TEXT_COLOR_RED);
+
+      } else {
+        outStream.print(SET_TEXT_COLOR_YELLOW);
+        outStream.print(SET_BG_COLOR_RED);
       }
+      outStream.print(space);
+      isYellow=!isYellow;
+
     }
+    outStream.print(SET_BG_COLOR_BLUE);
+
+    outStream.print(SET_TEXT_COLOR_WHITE);
+    outStream.print(center(String.valueOf(rowNumber), width));
+    outStream.print(RESET_BG_COLOR);
+    outStream.println();
 
 
   }
