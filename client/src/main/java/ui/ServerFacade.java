@@ -1,11 +1,14 @@
 package ui;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
+import model.GameData;
+import requests.CreateGameRequest;
+import requests.JoinGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
-import responses.LoginResponse;
-import responses.RegisterResponse;
+import responses.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +17,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class ServerFacade {
   private final String url;
@@ -68,6 +72,31 @@ public class ServerFacade {
     LoginResponse loginResponse=this.makeRequest("POST", "/session",
             new LoginRequest(username, password), LoginResponse.class);
     authToken=loginResponse.getAuth();
+  }
+
+  public void create(String name) throws ResponseException {
+    this.makeRequest("POST", "/game",
+            new CreateGameRequest(name, authToken), CreateGameResponse.class);
+  }
+
+  public ArrayList<GameData> list() throws ResponseException {
+    return this.makeRequest("GET", "/game", null,
+            ListGameResponse.class).games();
+
+  }
+
+  public void join(int gameID, ChessGame.TeamColor playerColor) throws ResponseException {
+    this.makeRequest("PUT", "/game",
+            new JoinGameRequest(playerColor, gameID), JoinGameResponse.class);
+  }
+
+  public void observe(int gameID) throws ResponseException {
+    this.makeRequest("PUT", "/game",
+            new JoinGameRequest(null, gameID), JoinGameResponse.class);
+  }
+
+  public void clear() throws ResponseException {
+    this.makeRequest("DELETE", "/db", null, null);
   }
 
 
