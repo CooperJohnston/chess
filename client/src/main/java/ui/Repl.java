@@ -10,8 +10,6 @@ public class Repl {
   }
 
   public void run() {
-    ChessIllustrator chess=new ChessIllustrator();
-    chess.beginGame();
     System.out.println("Welcome to Chess.");
     System.out.print(client.help());
 
