@@ -27,7 +27,7 @@ public class Repl {
       System.out.print(piece);
     }
     System.out.println();
-    System.out.println(SET_TEXT_FAINT + "© 2024 Vandelay Industries");
+    System.out.println(SET_TEXT_FAINT + "© 2024 Vandalay Industries");
     System.out.println(RESET_TEXT_BOLD_FAINT);
     Scanner scanner=new Scanner(System.in);
     var result="";
@@ -50,5 +50,4 @@ public class Repl {
     System.out.print(SET_BG_COLOR_WHITE + SET_TEXT_COLOR_BLACK);
 
   }
-
 }

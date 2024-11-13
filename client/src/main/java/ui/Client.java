@@ -70,7 +70,10 @@ public class Client {
     try {
       serverFacade.logout();
       state=State.SIGNEDOUT;
-      return String.format("%s has been logged out.", username);
+      String result=String.format("%s has been logged out.", username);
+      username=null;
+      password=null;
+      return result;
     } catch (ResponseException e) {
       return "Failed to logout: " + e.getMessage();
     }
@@ -83,7 +86,7 @@ public class Client {
         int gameId=Integer.parseInt(params[0]);
         serverFacade.observe(gameId);
         chessIllustrator.beginGame();
-        return String.format("%s observing game %s.", username, gameId);
+        return String.format("%s is observing game %s.", username, gameId);
       }
     } catch (ResponseException e) {
       return "Failed to observe: " + e.getMessage();
@@ -154,15 +157,16 @@ public class Client {
   public String register(String... params) throws ResponseException {
     try {
       if (params.length == 3) {
-        state=State.SIGNEDIN;
         username=params[0];
         password=params[1];
         String email=params[2];
         serverFacade.register(username, password, email);
+        state=State.SIGNEDIN;
         return String.format("Registration successful! " +
                 "Your username is %s.", username);
       }
     } catch (ResponseException e) {
+      state=State.SIGNEDOUT;
       return "Registration Incorrect: make sure you don't have an account already";
     }
     return "Registration Failed";
@@ -171,31 +175,33 @@ public class Client {
   public String login(String... params) throws ResponseException {
     try {
       if (params.length == 2) {
-        state=State.SIGNEDIN;
         username=params[0];
         password=params[1];
         serverFacade.login(username, password);
+        state=State.SIGNEDIN;
         return String.format("Login successful! Welcome back, %s.", username);
       }
     } catch (ResponseException e) {
-      return "Login error exception: " + e.getMessage();
+      state=State.SIGNEDOUT;
+      return "Login error exception: Failed to recognize your login data.";
     }
-    return "Login error: incorrect usage";
+    return "Login error: Please try again with a valid username or password.";
   }
 
   public String help() {
     if (state == State.SIGNEDOUT) {
       return """
-              - register <USERNAME> <PASSWORD> <EMAIL>
+              Type any of the following commands: 
+              - register <USERNAME> <PASSWORD> <EMAIL> - join as a new user
               - login <USERNAME> <PASSWORD>
               - quit
               """;
     }
     return """
-            - create <NAME>
-            - list
-            - join <ID> [WHITE|BLACK|<empty>]
-            - observe <ID>
+            - create <NAME> - creates a new game of chess.
+            - list - lists all games of chess on the sever.
+            - join <ID> [WHITE|BLACK|] - joins a game of chess.
+            - observe <ID> - watch a game of chess.
             - logout
             - quit
             """;
