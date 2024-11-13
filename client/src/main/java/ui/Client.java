@@ -57,8 +57,8 @@ public class Client {
         checkAuth();
         String gameName=params[0];
         serverFacade.create(gameName);
-        return String.format("%s Created game named %s. \n " +
-                "Use the join command to access your game", username, gameName);
+        int size=serverFacade.list().size();
+        return String.format("You created a game named %s! \n It is in the directory as game # %d! ", gameName, size);
       }
     } catch (ResponseException e) {
       return "Create Game error. Does this game already exist?";
@@ -90,7 +90,7 @@ public class Client {
         return String.format("%s is observing game %s.", username, gameId);
       }
     } catch (ResponseException e) {
-      return "Failed to observe the Game. Check your game ID";
+      return "Failed to observe the Game. Check your game ID.";
     }
     return "Unable to observe game.";
   }
@@ -101,14 +101,23 @@ public class Client {
         checkAuth();
         int gameId=Integer.parseInt(params[0]);
         ChessGame.TeamColor playerColor=getColor(params[1].toUpperCase());
+        ArrayList<GameData> gameData=serverFacade.list();
+        for (int i=0; i < gameData.size(); i++) {
+          GameData game=gameData.get(i);
+          if (i + 1 == gameId) {
+            gameId=game.gameID();
+            break;
+          }
+        }
         serverFacade.join(gameId, playerColor);
         chessIllustrator.beginGame();
-        return String.format("%s joined game %s as the %s player", username, gameId, playerColor);
+        return String.format("%s joined game %s as the %s player", username, Integer.parseInt(params[0]), playerColor);
       }
     } catch (ResponseException e) {
       return "Error joining game.";
     }
-    return "Unable to join game.";
+    return "Unable to join game. Did you specify a valid team color?" +
+            "\n Hint: Please specify either Black or White :)";
   }
 
   public String list() throws ResponseException {
@@ -120,8 +129,9 @@ public class Client {
       if (chessGames.isEmpty()) {
         return "There are no games to see here. You better make one (hint, hint)!";
       }
+      int i=1;
       for (var game : chessGames) {
-        result.append(String.format("Game ID: %d. Game Name: %s%n", game.gameID(), game.gameName()));
+        result.append(String.format("Game #%d. Game Name: %s%n", i, game.gameName()));
 
         result.append("WHITE PLAYER: ");
         if (Objects.isNull(game.whiteUsername())) {
@@ -135,6 +145,7 @@ public class Client {
         } else {
           result.append(game.blackUsername());
         }
+        i++;
         result.append("\n\n");
       }
 
@@ -180,7 +191,8 @@ public class Client {
         password=params[1];
         serverFacade.login(username, password);
         state=State.SIGNEDIN;
-        return String.format("Login successful! Welcome back, %s.", username);
+        return String.format("Login successful! Welcome back, %s. \n" +
+                "Create or Join a game of chess! Type 'help' for more info :)", username);
       }
     } catch (ResponseException e) {
       state=State.SIGNEDOUT;
@@ -194,18 +206,20 @@ public class Client {
       return """
               Type any of the following commands: 
               - register <USERNAME> <PASSWORD> <EMAIL> - join as a new user
-              - login <USERNAME> <PASSWORD>
+              - login <USERNAME> <PASSWORD> for existing users
               - quit
               """;
     }
-    return """
-            - create <NAME> - creates a new game of chess.
-            - list - lists all games of chess on the sever.
-            - join <ID> [WHITE|BLACK|] - joins a game of chess.
-            - observe <ID> - watch a game of chess.
-            - logout
-            - quit
-            """;
+    return "Hi, " + username + "\n" +
+            """
+                    Type any of the following commands:
+                    - create <NAME> - creates a new game of chess.
+                    - list - lists all games of chess on the sever.
+                    - join <ID> [WHITE|BLACK|] - joins a game of chess.
+                    - observe <ID> - watch a game of chess.
+                    - logout
+                    - quit
+                    """;
   }
 
   private void checkAuth() throws ResponseException {
