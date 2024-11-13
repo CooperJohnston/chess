@@ -57,7 +57,8 @@ public class Client {
         checkAuth();
         String gameName=params[0];
         serverFacade.create(gameName);
-        return String.format("Created game %s.", gameName);
+        return String.format("%s Created game named %s. \n " +
+                "Use the join command to access your game", username, gameName);
       }
     } catch (ResponseException e) {
       return "Create Game error. Does this game already exist?";
@@ -75,7 +76,7 @@ public class Client {
       password=null;
       return result;
     } catch (ResponseException e) {
-      return "Failed to logout: " + e.getMessage();
+      return "Failed to logout. Check your connection and try again.";
     }
   }
 
@@ -89,7 +90,7 @@ public class Client {
         return String.format("%s is observing game %s.", username, gameId);
       }
     } catch (ResponseException e) {
-      return "Failed to observe: " + e.getMessage();
+      return "Failed to observe the Game. Check your game ID";
     }
     return "Unable to observe game.";
   }
@@ -105,9 +106,9 @@ public class Client {
         return String.format("%s joined game %s as the %s player", username, gameId, playerColor);
       }
     } catch (ResponseException e) {
-      return "Error joining game. " + e.getMessage();
+      return "Error joining game.";
     }
-    return "Unable to game.";
+    return "Unable to join game.";
   }
 
   public String list() throws ResponseException {
@@ -117,10 +118,10 @@ public class Client {
       var result=new StringBuilder();
       var gson=new Gson();
       if (chessGames.isEmpty()) {
-        result.append("There are no games!");
+        return "There are no games to see here. You better make one (hint, hint)!";
       }
       for (var game : chessGames) {
-        result.append(String.format("Game ID: %d. Game name: %s%n", game.gameID(), game.gameName()));
+        result.append(String.format("Game ID: %d. Game Name: %s%n", game.gameID(), game.gameName()));
 
         result.append("WHITE PLAYER: ");
         if (Objects.isNull(game.whiteUsername())) {
@@ -134,7 +135,7 @@ public class Client {
         } else {
           result.append(game.blackUsername());
         }
-        result.append("\n");
+        result.append("\n\n");
       }
 
       return result.toString();
