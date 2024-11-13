@@ -3,8 +3,11 @@ package ui;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
+import model.GameData;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class Client {
   private String username=null;
@@ -38,6 +41,7 @@ public class Client {
           case "observe" -> observe(params);
           case "logout" -> logout();
           case "quit" -> "quit";
+          case "create" -> create(params);
           default -> help();
         };
 
@@ -47,12 +51,26 @@ public class Client {
     }
   }
 
-  public String logout() throws ResponseException {
+  public String create(String... params) throws ResponseException {
     try {
-      checkAuth();
+      if (params.length == 1) {
+        checkAuth();
+        String gameName=params[0];
+        serverFacade.create(gameName);
+        return String.format("Created game %s.", gameName);
+      }
+    } catch (ResponseException e) {
+      return "Create Game error. Does this game already exist?";
+    }
+    return "Try again! please give the name of the game you wish to create.";
+  }
+
+  public String logout() throws ResponseException {
+    checkAuth();
+    try {
       serverFacade.logout();
       state=State.SIGNEDOUT;
-      return String.format("%s has been logged out", username);
+      return String.format("%s has been logged out.", username);
     } catch (ResponseException e) {
       return "Failed to logout: " + e.getMessage();
     }
@@ -92,15 +110,33 @@ public class Client {
   public String list() throws ResponseException {
     try {
       checkAuth();
-      var chessGames=serverFacade.list();
+      ArrayList<GameData> chessGames=serverFacade.list();
       var result=new StringBuilder();
       var gson=new Gson();
-      for (var chessGame : chessGames) {
-        result.append(gson.toJson(chessGame)).append('\n');
+      if (chessGames.isEmpty()) {
+        result.append("There are no games!");
       }
+      for (var game : chessGames) {
+        result.append(String.format("Game ID: %d. Game name: %s%n", game.gameID(), game.gameName()));
+
+        result.append("WHITE PLAYER: ");
+        if (Objects.isNull(game.whiteUsername())) {
+          result.append("None");
+        } else {
+          result.append(game.whiteUsername());
+        }
+        result.append(" BLACK PLAYER: ");
+        if (Objects.isNull(game.blackUsername())) {
+          result.append("None");
+        } else {
+          result.append(game.blackUsername());
+        }
+        result.append("\n");
+      }
+
       return result.toString();
     } catch (ResponseException e) {
-      return "Error listing games: " + e.getMessage();
+      return "Unable to list games.";
     }
 
   }
@@ -127,7 +163,7 @@ public class Client {
                 "Your username is %s.", username);
       }
     } catch (ResponseException e) {
-      return "Registration Incorrect: " + e.getMessage();
+      return "Registration Incorrect: make sure you don't have an account already";
     }
     return "Registration Failed";
   }

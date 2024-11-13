@@ -53,6 +53,7 @@ public class ServerFacadeTests {
     facade.register("test5", "test6", "test7");
     facade.logout();
     Assertions.assertDoesNotThrow(() -> facade.login("test5", "test6"));
+    facade.logout();
   }
 
   @Test
@@ -90,6 +91,7 @@ public class ServerFacadeTests {
   @Test
   public void listPass() throws ResponseException {
     facade.register("morgan", "winston", "lulul");
+    facade.create("test");
     Assertions.assertNotNull(facade.list());
   }
 
@@ -138,6 +140,7 @@ public class ServerFacadeTests {
     facade.register("badObserve", "passwoid", "emoil");
     facade.create("take two wiht phoneas and forb");
     Assertions.assertThrows(ResponseException.class, () -> facade.observe(7));
+    facade.clear();
   }
 
   @Test

@@ -35,9 +35,13 @@ public class ServerFacade {
       if (authToken != null) {
         http.setRequestProperty("Authorization", authToken);
       }
-      http.setDoOutput(true);
-      writeBody(request, http);
-      http.connect();
+      if ("POST".equals(method) || "PUT".equals(method)) {
+        http.setRequestProperty("Content-Type", "application/json");
+        http.setDoOutput(true);
+        writeBody(request, http);
+      }
+
+
       throwIfNotSuccessful(http);
       return readBody(http, responseClass);
     } catch (Exception ex) {
