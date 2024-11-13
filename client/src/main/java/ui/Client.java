@@ -60,8 +60,8 @@ public class Client {
 
   public String observe(String... params) throws ResponseException {
     try {
-      checkAuth();
       if (params.length == 1) {
+        checkAuth();
         int gameId=Integer.parseInt(params[0]);
         serverFacade.observe(gameId);
         chessIllustrator.beginGame();

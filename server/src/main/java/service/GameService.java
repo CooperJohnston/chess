@@ -82,7 +82,7 @@ public class GameService {
       throw new DataAccessException("Error: unauthorized");
     }
     if (gameRequest.getPlayerColor() == null) {
-      throw new DataAccessException("Error: bad request");
+      return new JoinGameResponse(gameRequest.getGameID(), gameRequest.getPlayerColor());
     }
     AuthData authData=authDAO.getAuthData(gameRequest.getAuth());
     if (authData == null) {
