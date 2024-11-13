@@ -91,8 +91,10 @@ public class ServerFacade {
   }
 
   public void observe(int gameID) throws ResponseException {
+    JoinGameRequest joinGameRequest=new JoinGameRequest(null, gameID);
+    joinGameRequest.setObserve(true);
     this.makeRequest("PUT", "/game",
-            new JoinGameRequest(null, gameID), JoinGameResponse.class);
+            joinGameRequest, JoinGameResponse.class);
   }
 
   public void clear() throws ResponseException {

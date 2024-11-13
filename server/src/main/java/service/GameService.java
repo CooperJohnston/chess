@@ -81,8 +81,11 @@ public class GameService {
     if (gameData == null) {
       throw new DataAccessException("Error: unauthorized");
     }
+    if (gameRequest.isObserve()) {
+      return new JoinGameResponse(gameRequest.getGameID(), null);
+    }
     if (gameRequest.getPlayerColor() == null) {
-      return new JoinGameResponse(gameRequest.getGameID(), gameRequest.getPlayerColor());
+      throw new DataAccessException("Error: bad request");
     }
     AuthData authData=authDAO.getAuthData(gameRequest.getAuth());
     if (authData == null) {

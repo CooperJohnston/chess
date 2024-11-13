@@ -7,10 +7,12 @@ public class JoinGameRequest {
   private final ChessGame.TeamColor playerColor;
   private String authToken;
   private final int gameID;
+  boolean observe;
 
   public JoinGameRequest(ChessGame.TeamColor playerColor, int id) {
     this.playerColor=playerColor;
     this.gameID=id;
+    this.observe=false;
   }
 
   public ChessGame.TeamColor getPlayerColor() {
@@ -36,5 +38,13 @@ public class JoinGameRequest {
 
   public int getGameID() {
     return gameID;
+  }
+
+  public void setObserve(boolean observe) {
+    this.observe=observe;
+  }
+
+  public boolean isObserve() {
+    return observe;
   }
 }
