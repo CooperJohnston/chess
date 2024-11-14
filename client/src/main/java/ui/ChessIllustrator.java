@@ -26,6 +26,7 @@ public class ChessIllustrator {
     String[][] reversedBoard=new String[8][8];
     for (int i=0; i < 8; i++) {
       reversedBoard[i]=board[7 - i];
+      reversedBoard[i]=reverseArray(reversedBoard[i]);
     }
     return reversedBoard;
   }
@@ -68,7 +69,7 @@ public class ChessIllustrator {
               center(EMPTY, width), center(EMPTY, width), center(EMPTY, width)};
     }
 
-    board[0]=new String[]{
+    board[1]=new String[]{
             center(BLACK_PAWN, width),
             center(BLACK_PAWN, width),
             center(BLACK_PAWN, width),
@@ -79,7 +80,7 @@ public class ChessIllustrator {
             center(BLACK_PAWN, width)
     };
 
-    board[1]=new String[]{
+    board[0]=new String[]{
             center(BLACK_ROOK, width),
             center(BLACK_KNIGHT, width),
             center(BLACK_BISHOP, width),
@@ -107,13 +108,13 @@ public class ChessIllustrator {
       headers=reverseArray(headers);
     }
 
-    outStream.print(SET_BG_COLOR_BLUE);
+    outStream.print(SET_BG_COLOR_DARK_GREEN);
     outStream.print(SET_TEXT_COLOR_WHITE);
     for (String header : headers) {
       outStream.print(header);
     }
-    outStream.print(RESET_BG_COLOR);
-    outStream.println();
+    outStream.println(SET_BG_COLOR_WHITE);
+    outStream.print(SET_TEXT_COLOR_BLACK);
   }
 
   // Utility method to reverse the headers array
@@ -128,18 +129,18 @@ public class ChessIllustrator {
 
   public void drawBoard(String[][] board, boolean isWhiteView) {
 
-    outStream.print(SET_BG_COLOR_BLUE);
+    outStream.print(SET_BG_COLOR_DARK_GREEN);
 
     outStream.print(SET_TEXT_COLOR_WHITE);
     drawHeaders(isWhiteView);
-    boolean startYellow=true;
-    int rowNumber=isWhiteView ? 8 : 1;  // Start row numbering based on view
-    int rowIncrement=isWhiteView ? -1 : 1; // Decrement for White, increment for Black
+    boolean startYellow=isWhiteView;
+    int rowNumber=isWhiteView ? 8 : 1;
+    int rowIncrement=isWhiteView ? -1 : 1;
 
     for (String[] row : board) {
       drawRow(row, startYellow, rowNumber);
       startYellow=!startYellow;
-      rowNumber+=rowIncrement; // Adjust row number based on view
+      rowNumber+=rowIncrement;
     }
     drawHeaders(isWhiteView);
 
@@ -147,7 +148,7 @@ public class ChessIllustrator {
   }
 
   public void drawRow(String[] row, boolean startYellow, int rowNumber) {
-    outStream.print(SET_BG_COLOR_BLUE);
+    outStream.print(SET_BG_COLOR_DARK_GREEN);
 
     outStream.print(SET_TEXT_COLOR_WHITE);
     int width=5;
@@ -156,26 +157,32 @@ public class ChessIllustrator {
     boolean isYellow=startYellow;
     for (String space : row) {
       if (isYellow) {
-        outStream.print(SET_BG_COLOR_YELLOW);
-        outStream.print(SET_TEXT_COLOR_RED);
+        outStream.print(SET_BG_COLOR_LIGHT_GREY);
+        color(space);
 
       } else {
-        outStream.print(SET_TEXT_COLOR_YELLOW);
-        outStream.print(SET_BG_COLOR_RED);
+        color(space);
+        outStream.print(SET_BG_COLOR_DARK_GREY);
       }
       outStream.print(space);
       isYellow=!isYellow;
 
     }
-    outStream.print(SET_BG_COLOR_BLUE);
+    outStream.print(SET_BG_COLOR_DARK_GREEN);
 
     outStream.print(SET_TEXT_COLOR_WHITE);
     outStream.print(center(String.valueOf(rowNumber), width));
-    outStream.print(RESET_BG_COLOR);
-    outStream.println();
+    outStream.println(SET_BG_COLOR_WHITE);
 
 
   }
 
-
+  private void color(String space) {
+    if (space.contains(BLACK_BISHOP) || space.contains(BLACK_KNIGHT) || space.contains(BLACK_ROOK)
+            || space.contains(BLACK_PAWN) || space.contains(BLACK_QUEEN) || space.contains(BLACK_KING)) {
+      outStream.print(SET_TEXT_COLOR_RED);
+    } else {
+      outStream.print(SET_TEXT_COLOR_BLUE);
+    }
+  }
 }

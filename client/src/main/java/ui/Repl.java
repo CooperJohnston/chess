@@ -36,14 +36,25 @@ public class Repl {
       String line=scanner.nextLine();
 
       try {
+        for (String piece : pieces) {
+          System.out.print(piece);
+        }
+        System.out.println();
         result=client.eval(line);
         System.out.print(result);
+        System.out.println();
+        for (String piece : pieces) {
+          System.out.print(piece);
+        }
+        System.out.println();
       } catch (Throwable e) {
         var msg=e.toString();
         System.out.print(msg);
       }
     }
+
   }
+
 
   private void printPrompt() {
     System.out.print(SET_TEXT_COLOR_BLUE + "\n" + SET_BG_COLOR_BLACK + ">>> ");

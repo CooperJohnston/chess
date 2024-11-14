@@ -61,7 +61,7 @@ public class Client {
         return String.format("You created a game named %s! \n It is in the directory as game # %d! ", gameName, size);
       }
     } catch (ResponseException e) {
-      return "Create Game error. Does this game already exist?";
+      return "Sorry, that didn't work. Does this game already exist?";
     }
     return "Try again! please give the name of the game you wish to create.";
   }
@@ -85,14 +85,26 @@ public class Client {
       if (params.length == 1) {
         checkAuth();
         int gameId=Integer.parseInt(params[0]);
+        String gameName="Null";
+        ArrayList<GameData> gameData=serverFacade.list();
+        for (int i=0; i < gameData.size(); i++) {
+          GameData game=gameData.get(i);
+          if (i + 1 == gameId) {
+            gameId=game.gameID();
+            gameName=game.gameName();
+            break;
+          }
+        }
         serverFacade.observe(gameId);
         chessIllustrator.beginGame();
-        return String.format("%s is observing game %s.", username, gameId);
+        return String.format("%s is observing game %s.", username, gameName);
       }
-    } catch (ResponseException e) {
-      return "Failed to observe the Game. Check your game ID.";
+    } catch (Exception e) {
+      return "We faailed to find a Game with the ID you gave us. " +
+              "\n :) Check your game ID is correct.";
     }
-    return "Unable to observe game.";
+    return "We couldn't find a game to observe! Make sure you put in a game number. \n" +
+            "Hint: You can find games to join using the 'list' command";
   }
 
   public String join(String... params) {
@@ -113,10 +125,13 @@ public class Client {
         chessIllustrator.beginGame();
         return String.format("%s joined game %s as the %s player", username, Integer.parseInt(params[0]), playerColor);
       }
-    } catch (ResponseException e) {
-      return "Error joining game.";
+    } catch (Exception e) {
+      return "We couldn't find that game spot. \nMake sure you have: " +
+              "\n -a valid game number from the list\n" + " -specified either black or white" +
+              "\n -and you are not trying to join a full spot ;)";
+
     }
-    return "Unable to join game. Did you specify a valid team color?" +
+    return "Unable to join game. Did you specify a number AND valid team color?" +
             "\n Hint: Please specify either Black or White :)";
   }
 
@@ -131,17 +146,18 @@ public class Client {
       }
       int i=1;
       for (var game : chessGames) {
-        result.append(String.format("Game #%d. Game Name: %s%n", i, game.gameName()));
+
+        result.append(String.format("Game #%d! Name: %s%n", i, game.gameName()));
 
         result.append("WHITE PLAYER: ");
         if (Objects.isNull(game.whiteUsername())) {
-          result.append("None");
+          result.append("Available");
         } else {
           result.append(game.whiteUsername());
         }
         result.append(" BLACK PLAYER: ");
         if (Objects.isNull(game.blackUsername())) {
-          result.append("None");
+          result.append("Available");
         } else {
           result.append(game.blackUsername());
         }
@@ -151,7 +167,7 @@ public class Client {
 
       return result.toString();
     } catch (ResponseException e) {
-      return "Unable to list games.";
+      return "Unable to list games. An internal error occurred.";
     }
 
   }
@@ -177,11 +193,11 @@ public class Client {
         return String.format("Registration successful! " +
                 "Your username is %s.", username);
       }
-    } catch (ResponseException e) {
+    } catch (Exception e) {
       state=State.SIGNEDOUT;
       return "Registration Incorrect: make sure you don't have an account already";
     }
-    return "Registration Failed";
+    return "Registration Failed. \n Make sure you have provided a valid username, password and email address.";
   }
 
   public String login(String... params) throws ResponseException {
@@ -196,9 +212,9 @@ public class Client {
       }
     } catch (ResponseException e) {
       state=State.SIGNEDOUT;
-      return "Login error exception: Failed to recognize your login data.";
+      return "Login failed! We could not find you...";
     }
-    return "Login error: Please try again with a valid username or password.";
+    return "Login failed! Please try again with a valid username and password.";
   }
 
   public String help() {
@@ -213,12 +229,11 @@ public class Client {
     return "Hi, " + username + "\n" +
             """
                     Type any of the following commands:
-                    - create <NAME> - creates a new game of chess.
-                    - list - lists all games of chess on the sever.
-                    - join <ID> [WHITE|BLACK|] - joins a game of chess.
-                    - observe <ID> - watch a game of chess.
+                    - create <GAME_NAME> - creates a new game of chess with the given name.
+                    - list - lists all games of chess on the sever in order.
+                    - join <GAME_NUMBER> [WHITE|BLACK|] - joins a game of chess.
+                    - observe <GAME_NUMBER> - watch a game of chess.
                     - logout
-                    - quit
                     """;
   }
 
@@ -228,6 +243,7 @@ public class Client {
     }
 
   }
+
 
 }
 
