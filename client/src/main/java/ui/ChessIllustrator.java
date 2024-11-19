@@ -133,7 +133,7 @@ public class ChessIllustrator {
 
     outStream.print(SET_TEXT_COLOR_WHITE);
     drawHeaders(isWhiteView);
-    boolean startYellow=isWhiteView;
+    boolean startYellow=true;
     int rowNumber=isWhiteView ? 8 : 1;
     int rowIncrement=isWhiteView ? -1 : 1;
 
