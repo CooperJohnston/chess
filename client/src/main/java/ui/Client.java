@@ -15,6 +15,7 @@ public class Client {
   private ChessIllustrator chessIllustrator;
   private final ServerFacade serverFacade;
   private State state=State.SIGNEDOUT;
+  private GameState gameState;
 
   public Client(String url) {
 
@@ -218,6 +219,17 @@ public class Client {
   }
 
   public String help() {
+    if (this.gameState == GameState.PLAYING) {
+      return """
+              - Help
+              - Redraw
+              - Leave
+              - Move
+              - Resign
+              - HighlightMoves
+              """;
+    }
+
     if (state == State.SIGNEDOUT) {
       return """
               Type any of the following commands: 
