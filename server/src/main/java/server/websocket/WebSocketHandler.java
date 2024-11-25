@@ -1,5 +1,6 @@
 package server.websocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
@@ -33,17 +34,7 @@ public class WebSocketHandler {
     try {
       UserGameCommand command=new Gson().fromJson(message, UserGameCommand.class);
       boolean authorized=authService.authenticate(command.getAuthToken());
-      GameData realGame=null;
-      ArrayList<GameData> gameData=gameService.getAllGames();
-      int id=command.getGameID();
-      int i=1;
-      for (GameData game : gameData) {
-        if (i == id) {
-          realGame=game;
-          break;
-        }
-        i++;
-      }
+      GameData realGame=getGame(command.getGameID());
       if (realGame == null) {
         ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid game id");
         session.getRemote().sendString(error.toString());
@@ -63,4 +54,44 @@ public class WebSocketHandler {
     }
 
   }
+
+  public void resign(String authToken, int gameID, UserGameCommand command) throws IOException {
+    try {
+      String userOne=authService.getAuthData(authToken).username();
+      GameData currData=getGame(command.getGameID());
+      ChessGame chessGame=currData.game();
+      ChessGame.TeamColor turn=chessGame.getTeamTurn();
+      String userTwo=authService.getAuthData(command.getAuthToken()).username();
+      ChessGame.TeamColor winner=chessGame.getWinner();
+
+
+    } catch (Exception e) {
+      ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid game authtoken");
+
+
+    }
+
+
+  }
+
+  private GameData getGame(int gameID) throws IOException {
+    try {
+      GameData realGame=null;
+      ArrayList<GameData> gameData=gameService.getAllGames();
+      int id=gameID;
+      int i=1;
+      for (GameData game : gameData) {
+        if (i == id) {
+          realGame=game;
+          break;
+        }
+        i++;
+      }
+      return realGame;
+    } catch (Exception e) {
+      throw new IOException(e.getMessage());
+    }
+  }
+
+
 }

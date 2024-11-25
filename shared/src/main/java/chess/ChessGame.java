@@ -13,10 +13,15 @@ public class ChessGame {
   ChessBoard board=new ChessBoard();
   TeamColor curr;
   private boolean enPassant=false;
+  TeamColor winner=null;
 
   public ChessGame() {
     board.resetBoard();
     setTeamTurn(TeamColor.WHITE);
+  }
+
+  public TeamColor getWinner() {
+    return winner;
   }
 
   /**
@@ -270,6 +275,11 @@ public class ChessGame {
    * @return True if the specified team is in checkmate
    */
   public boolean isInCheckmate(TeamColor teamColor) {
+
+    if (winner != teamColor && winner != null) {
+      return true;
+    }
+
     return isInCheck(teamColor) && !hasValidMoves(teamColor);
   }
 
@@ -303,4 +313,15 @@ public class ChessGame {
   public ChessBoard getBoard() {
     return this.board;
   }
+
+
+  public void resign(TeamColor teamColor) {
+    if (teamColor == TeamColor.WHITE) {
+      winner=TeamColor.BLACK;
+    } else {
+      winner=TeamColor.BLACK;
+    }
+  }
+
+
 }

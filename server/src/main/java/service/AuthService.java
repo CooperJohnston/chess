@@ -50,5 +50,9 @@ public class AuthService {
     }
   }
 
+  public AuthData getAuthData(String token) throws DataAccessException {
+    return dao.getAuthData(token);
+  }
+
 
 }
