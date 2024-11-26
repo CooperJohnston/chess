@@ -18,4 +18,6 @@ public interface GameDAO {
   boolean checkGame(String gameName) throws DataAccessException;
 
   boolean checkGame(int gameID) throws DataAccessException;
+
+  public void remove(int gameID) throws DataAccessException;
 }

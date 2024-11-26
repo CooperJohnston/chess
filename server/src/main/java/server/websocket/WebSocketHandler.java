@@ -15,6 +15,7 @@ import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @WebSocket
 public class WebSocketHandler {
@@ -63,6 +64,16 @@ public class WebSocketHandler {
       ChessGame.TeamColor turn=chessGame.getTeamTurn();
       String userTwo=authService.getAuthData(command.getAuthToken()).username();
       ChessGame.TeamColor winner=chessGame.getWinner();
+      if (winner != null) {
+        var error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game is already over");
+        connectionManager.sendMessage(command.getAuthToken(), error, command.getGameID());
+        return;
+      }
+      if (!Objects.equals(userOne, currData.blackUsername()) && !Objects.equals(userTwo, currData.whiteUsername())) {
+        ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "observers can't resign");
+        connectionManager.sendMessage(command.getAuthToken(), error, command.getGameID());
+        return;
+      }
 
 
     } catch (Exception e) {

@@ -67,4 +67,15 @@ public class MemoryGameDAO implements GameDAO {
     }
     return false;
   }
+
+  @Override
+  public void remove(int gameID) throws DataAccessException {
+    for (GameData gameData : games) {
+      if (gameData.gameID() == gameID) {
+        games.remove(gameData);
+        return;
+      }
+    }
+  }
 }
+

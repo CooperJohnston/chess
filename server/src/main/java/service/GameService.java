@@ -110,5 +110,10 @@ public class GameService {
     return gameDAO.getAllGames();
   }
 
+  public void addWinner(GameData winningGame) throws DataAccessException {
+    gameDAO.remove(winningGame.gameID());
+    gameDAO.createGame(winningGame);
+  }
+
 
 }
