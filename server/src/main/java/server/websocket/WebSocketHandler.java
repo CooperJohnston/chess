@@ -34,110 +34,102 @@ public class WebSocketHandler {
     this.userService=userService;
   }
 
-  @OnWebSocketMessage
-  public void onMessage(String message, Session session) throws IOException {
-    try {
-      UserGameCommand command=new Gson().fromJson(message, UserGameCommand.class);
-      boolean authorized=authService.authenticate(command.getAuthToken());
-      GameData realGame=getGame(command.getGameID());
-      if (realGame == null) {
-        ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid game id");
-        session.getRemote().sendString(error.toString());
-        return;
-      }
-      connectionManager.add(command.getAuthToken(), session, command.getGameID());
-      switch (command.getCommandType()) {
-        case RESIGN -> resign(command.getAuthToken(), command.getGameID(), command);
-        case CONNECT -> connect(message, session);
-        case LEAVE -> leave(command.getAuthToken(), command);
-        case MAKE_MOVE -> makeMove(message);
-      }
 
-    } catch (Exception e) {
+  @OnWebSocketMessage
+  public void onMessage(String message, Session session) throws Exception {
+    UserGameCommand command=new Gson().fromJson(message, UserGameCommand.class);
+    String token=authService.getAuthData(command.getAuthToken()).authToken();
+    GameData game=getGame(command.getGameID());
+
+    if (token == null) {
       ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid game authtoken");
       session.getRemote().sendString(error.toString());
+      return;
     }
+    if (game == null) {
 
-  }
-
-  public void connect(String message, Session session) throws IOException {
-    try {
-      JoinGameCommand command=new Gson().fromJson(message, JoinGameCommand.class);
-      connectionManager.add(command.getAuthToken(), session, command.getGameID());
-      String username=authService.getAuthData(command.getAuthToken()).username();
-      ChessGame chessGame=getGame(command.getGameID()).game();
-      if (command.getColor() == null) {
-        String messageReturn=String.format("%s has joined your game", username);
-        var obs=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, chessGame);
-        connectionManager.sendMessage(command.getAuthToken(), obs, command.getGameID());
-
-        var notification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, messageReturn);
-        connectionManager.broadcast(command.getAuthToken(), notification, command.getGameID());
-
-      } else {
-        var obs=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, chessGame);
-        connectionManager.sendMessage(command.getAuthToken(), obs, command.getGameID());
-        String messageReturn=String.format("%s has joined your game as %s", username, command.getColor());
-        var notification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, messageReturn);
-        connectionManager.broadcast(command.getAuthToken(), notification, command.getGameID());
-
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+      ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid game id");
+      session.getRemote().sendString(error.toString());
+      return;
+    }
+    connectionManager.add(command.getAuthToken(), session, command.getGameID());
+    switch (command.getCommandType()) {
+      case RESIGN -> resign(command.getAuthToken(), command.getGameID(), command);
+      case CONNECT -> connect(message, session);
+      case LEAVE -> leave(command.getAuthToken(), command);
+      case MAKE_MOVE -> makeMove(message);
     }
   }
 
 
-  public void resign(String authToken, int gameID, UserGameCommand command) throws IOException {
-    try {
-      String userOne=authService.getAuthData(authToken).username();
-      GameData currData=getGame(command.getGameID());
-      ChessGame chessGame=currData.game();
-      ChessGame.TeamColor turn=chessGame.getTeamTurn();
-      String userTwo=authService.getAuthData(command.getAuthToken()).username();
-      ChessGame.TeamColor winner=chessGame.getWinner();
-      if (winner != null) {
-        var error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game is already over");
-        connectionManager.sendMessage(command.getAuthToken(), error, command.getGameID());
-        return;
-      }
-      if (!Objects.equals(userOne, currData.blackUsername()) && !Objects.equals(userTwo, currData.whiteUsername())) {
-        ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "observers can't resign");
-        connectionManager.sendMessage(command.getAuthToken(), error, command.getGameID());
-        return;
-      }
+  public void connect(String message, Session session) throws Exception {
+    JoinGameCommand command=new Gson().fromJson(message, JoinGameCommand.class);
+    connectionManager.add(command.getAuthToken(), session, command.getGameID());
 
-      String victor;
-      if (turn == ChessGame.TeamColor.WHITE) {
-        victor=currData.blackUsername();
-        chessGame.resign(ChessGame.TeamColor.WHITE);
-        GameData winnerData=new GameData(currData.gameID(), userTwo, userOne, currData.gameName(), chessGame);
-        gameService.updateGame(winnerData);
-      } else {
-        victor=currData.whiteUsername();
-        chessGame.resign(ChessGame.TeamColor.BLACK);
-        GameData winnerData=new GameData(currData.gameID(), userTwo, userOne, currData.gameName(), chessGame);
-        gameService.updateGame(winnerData);
 
-      }
-      Notification winMess=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s has resigned", victor));
-      connectionManager.broadcast(authToken, winMess, command.getGameID());
-      connectionManager.sendMessage(authToken, winMess, command.getGameID());
+    String name=authService.getAuthData(command.getAuthToken()).username();
+    ChessGame game=getGame(command.getGameID()).game();
+    if (command.getColor() == null) {
+      String messageReturn=String.format("%s has joined your game", name);
+      var obs=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+      connectionManager.sendMessage(command.getAuthToken(), obs, command.getGameID());
 
-    } catch (Exception e) {
-      ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid game authtoken");
+      var notification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, messageReturn);
+      connectionManager.broadcast(command.getAuthToken(), notification, command.getGameID());
 
+    } else {
+      var obs=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+      connectionManager.sendMessage(command.getAuthToken(), obs, command.getGameID());
+      String messageReturn=String.format("%s has joined your game as %s", name, command.getColor());
+      var notification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, messageReturn);
+      connectionManager.broadcast(command.getAuthToken(), notification, command.getGameID());
 
     }
 
+  }
 
+
+  public void resign(String authToken, int gameID, UserGameCommand command) throws Exception {
+    String name=authService.getAuthData(authToken).username();
+    GameData chessGame=getGame(gameID);
+    ChessGame game=chessGame.game();
+    String username=authService.getAuthData(command.getAuthToken()).username();
+    GameData data=getGame(gameID);
+    ChessGame.TeamColor winner=game.getWinner();
+    if (winner != null) {
+      var error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game is already over");
+      connectionManager.sendMessage(command.getAuthToken(), error, command.getGameID());
+      return;
+    }
+    if (!Objects.equals(name, data.blackUsername()) && !Objects.equals(username, data.whiteUsername())) {
+      ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "observers can't resign");
+      connectionManager.sendMessage(command.getAuthToken(), error, command.getGameID());
+      return;
+    }
+
+
+    String winn;
+    if (game.getTeamTurn() == ChessGame.TeamColor.WHITE) {
+      winn=chessGame.blackUsername();
+      game.resign(ChessGame.TeamColor.WHITE);
+      gameService.updateGame((new GameData(data.gameID(), data.whiteUsername(),
+              data.blackUsername(), data.gameName(), game)));
+    } else {
+      winn=chessGame.whiteUsername();
+      game.resign(ChessGame.TeamColor.BLACK);
+      gameService.updateGame((new GameData(data.gameID(), data.whiteUsername(),
+              data.blackUsername(), data.gameName(), game)));
+    }
+    Notification winMess=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s has resigned", winn));
+    connectionManager.broadcast(authToken, winMess, command.getGameID());
+    connectionManager.sendMessage(authToken, winMess, command.getGameID());
   }
 
   public void leave(String authToken, UserGameCommand command) throws Exception {
     connectionManager.remove(authToken, command.getGameID());
     var gameID=command.getGameID();
     String username=authService.getAuthData(command.getAuthToken()).username();
-    GameData game=getGame(command.getGameID());
+    GameData game=getGame(gameID);
     ChessGame chessGame=game.game();
     String name=authService.getAuthData(authToken).username();
     String message=String.format("%s has left your game", name);

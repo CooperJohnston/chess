@@ -1,14 +1,15 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameData;
+import websocket.WebsocketFacade;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.WHITE_BISHOP;
@@ -21,11 +22,18 @@ public class Client {
   private final ServerFacade serverFacade;
   private State state=State.SIGNEDOUT;
   private GameState gameState;
+  WebsocketFacade websocketFacade;
+  int identificaton;
+  ChessGame.TeamColor teamColor;
+  ArrayList<GameData> gameData;
+  private final String url;
+  private final ServerNotifications serverNotifications;
 
-  public Client(String url) {
-
+  public Client(String url, ServerNotifications notifications) {
+    this.serverNotifications=notifications;
     serverFacade=new ServerFacade(url);
     this.chessIllustrator=new ChessIllustrator();
+    this.url=url;
   }
 
   public String eval(String input) {
@@ -33,28 +41,98 @@ public class Client {
       var tokens=input.toLowerCase().split(" ");
       var cmd=(tokens.length > 0) ? tokens[0] : "help";
       var params=Arrays.copyOfRange(tokens, 1, tokens.length);
-      if (state == State.SIGNEDOUT) {
-        return switch (cmd) {
-          case "register" -> register(params);
-          case "login" -> login(params);
-          case "quit" -> "quit";
-          default -> help();
-        };
-      } else {
-        return switch (cmd) {
-          case "list" -> list();
-          case "join" -> join(params);
-          case "observe" -> observe(params);
-          case "logout" -> logout();
-          case "quit" -> "quit";
-          case "create" -> create(params);
-          default -> help();
-        };
+      return switch (cmd) {
+        case "logout" -> logout();
+        case "login" -> login(params);
+        case "list" -> list();
+        case "playgame" -> join(params);
+        case "create" -> create(params);
+        case "observe" -> observe(params);
+        case "register" -> register(params);
+        case "redraw" -> redraw();
+        case "leave" -> leave();
+        case "move" -> makeMove(params);
+        case "resign" -> resign();
+        case "highlightmoves" -> listMoves(params);
+        case "quit" -> "quit";
+        default -> help();
 
-      }
+      };
     } catch (ResponseException e) {
       return e.getMessage();
     }
+  }
+
+  private String makeMove(String[] params) throws ResponseException {
+    checkAuth();
+    if (gameState != GameState.PLAYING) {
+      return "you are not playing a game";
+    }
+    if (params.length != 2 && params.length != 3) {
+      throw new ResponseException(500, "expected: makeMove <from> <to>");
+    }
+    ChessPosition start=checkCoord(params[0]);
+    ChessPosition end=checkCoord(params[1]);
+    String promotion="null";
+    if (params.length == 3) {
+      promotion=params[2];
+    }
+    this.gameData=this.serverFacade.list();
+    GameData game=null;
+    for (var c : this.gameData) {
+      if (c.gameID() == this.identificaton) {
+        game=c;
+      }
+    }
+    assert game != null;
+    ChessPiece piece=game.game().getBoard().getPiece(start);
+    if (piece == null) {
+      return "no piece to move";
+
+    }
+    if (piece.getTeamColor() != this.color) {
+      return "You cannot move that piece";
+    }
+    try {
+      websocketFacade.makeMove(start, end, promotion, serverFacade.getAuthToken(), game.gameID(), this.color);
+      return "";
+    } catch (ResponseException e) {
+      throw new ResponseException(500, e.getMessage());
+    }
+  }
+
+  private String resign() throws ResponseException {
+    checkAuth();
+    if (gameState != GameState.PLAYING) {
+      return "you are not playing a game";
+    }
+    System.out.print("Do you want to resign?\nY|N\n");
+    Scanner scanner=new Scanner(System.in);
+    String res=scanner.nextLine().strip();
+    if (res.equalsIgnoreCase("y")) {
+      websocketFacade.resign(serverFacade.getAuthToken(), this.identificaton);
+    }
+    return "";
+  }
+
+  private String redraw() throws ResponseException {
+    checkAuth();
+    if (gameState != GameState.PLAYING) {
+      return "you are not playing a game";
+    }
+
+    this.gameData=this.serverFacade.list();
+    for (var c : this.gameData) {
+      if (c.gameID() == this.identificaton) {
+        if (this.color == ChessGame.TeamColor.BLACK) {
+          printBoard(c.game(), false, null, null);
+          return "";
+        }
+        printBoard(c.game(), true, null, null);
+        return "";
+      }
+    }
+    return "can't find your game brother, sorry";
   }
 
   public String create(String... params) throws ResponseException {
@@ -86,59 +164,101 @@ public class Client {
     }
   }
 
-  public String observe(String... params) throws ResponseException {
-    try {
-      if (params.length == 1) {
-        checkAuth();
-        int gameId=Integer.parseInt(params[0]);
-        String gameName="Null";
-        ArrayList<GameData> gameData=serverFacade.list();
-        for (int i=0; i < gameData.size(); i++) {
-          GameData game=gameData.get(i);
-          if (i + 1 == gameId) {
-            gameId=game.gameID();
-            gameName=game.gameName();
-            break;
-          }
-        }
-        serverFacade.observe(gameId);
-        chessIllustrator.beginGame();
-        return String.format("%s is observing game %s.", username, gameName);
+  public String observe(String[] params) throws ResponseException {
+    checkAuth();
+    int id;
+    if (params.length == 1) {
+      try {
+        id=Integer.parseInt(params[0]);
+      } catch (NumberFormatException e) {
+        throw new ResponseException(401, "input must be a valid index");
       }
-    } catch (Exception e) {
-      return "We faailed to find a Game with the ID you gave us. " +
-              "\n :) Check your game ID is correct.";
+      int i=1;
+      for (var game : this.gameData) {
+        if (i == id) {
+          websocketFacade=new WebsocketFacade(this.url, serverNotifications);
+          websocketFacade.playGame("", this.serverFacade.getAuthToken(), game.gameID());
+          this.gameState=GameState.PLAYING;
+          return "";
+        }
+        i++;
+      }
+      throw new ResponseException(400, "invalid ID");
+    } else {
+      throw new ResponseException(400, "Expected: <your name> <password>");
     }
-    return "We couldn't find a game to observe! Make sure you put in a game number. \n" +
-            "Hint: You can find games to join using the 'list' command";
   }
 
-  public String join(String... params) {
-    try {
-      if (params.length == 2) {
-        checkAuth();
-        int gameId=Integer.parseInt(params[0]);
-        ChessGame.TeamColor playerColor=getColor(params[1].toUpperCase());
-        ArrayList<GameData> gameData=serverFacade.list();
-        for (int i=0; i < gameData.size(); i++) {
-          GameData game=gameData.get(i);
-          if (i + 1 == gameId) {
-            gameId=game.gameID();
-            break;
-          }
-        }
-        serverFacade.join(gameId, playerColor);
-        chessIllustrator.beginGame();
-        return String.format("%s joined game %s as the %s player", username, Integer.parseInt(params[0]), playerColor);
-      }
-    } catch (Exception e) {
-      return "We couldn't find that game spot. \nMake sure you have: " +
-              "\n -a valid game number from the list\n" + " -specified either black or white" +
-              "\n -and you are not trying to join a full spot ;)";
+  public String join(String[] params) throws ResponseException {
+    checkAuth();
 
+    if (params.length != 2) {
+      throw new ResponseException(400, "Expected: playgame <gameID> <[BLACK|WHITE]>");
     }
-    return "Unable to join game. Did you specify a number AND valid team color?" +
-            "\n Hint: Please specify either Black or White :)";
+
+    int id;
+    try {
+      id=Integer.parseInt(params[0]);
+    } catch (NumberFormatException e) {
+      throw new ResponseException(401, "input must be a valid index");
+    }
+
+    int i=1;
+    for (var game : this.gameData) {
+      if (i != id) {
+        i++;
+        continue;
+      }
+
+      String chosenColor=params[1].strip().toUpperCase();
+      boolean isWhite=chosenColor.equals("WHITE");
+      boolean isBlack=chosenColor.equals("BLACK");
+
+      if (!isWhite && !isBlack) {
+        throw new ResponseException(400, "Invalid color. Choose BLACK or WHITE.");
+      }
+      this.color=isWhite ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+      boolean isUserValid=(isWhite && username.equals(game.whiteUsername())) ||
+              (isBlack && username.equals(game.blackUsername()));
+      if (isUserValid) {
+        this.gameState=GameState.PLAYING;
+        this.identificaton=game.gameID();
+        websocketFacade=new WebsocketFacade(this.url, serverNotifications);
+        websocketFacade.playGame(params[1], this.serverFacade.getAuthToken(), game.gameID());
+        return "";
+      }
+      serverFacade.join(game.gameID(), this.color);
+      this.gameState=GameState.PLAYING;
+      websocketFacade=new WebsocketFacade(this.url, serverNotifications);
+      websocketFacade.playGame(params[1], this.serverFacade.getAuthToken(), game.gameID());
+      this.identificaton=game.gameID();
+      return "";
+    }
+    throw new ResponseException(400, "invalid ID");
+  }
+
+  private String listMoves(String[] params) throws ResponseException {
+    if (params.length != 1) {
+      throw new ResponseException(500, "expected: HighlightMoves <location>");
+    }
+    ChessPosition start=checkCoord(params[0]);
+    this.gameData=serverFacade.list();
+    for (var c : this.gameData) {
+      if (c.gameID() == this.identificaton) {
+        Collection<ChessMove> moves=c.game().validMoves(start);
+//        System.out.println(this.getPiece(c.game().getBoard().getPiece(start)));
+        if (this.color == ChessGame.TeamColor.BLACK) {
+
+          printBoard(c.game(), false, moves, start);
+          return "";
+        } else {
+          printBoard(c.game(), true, moves, start);
+          return "";
+
+        }
+      }
+    }
+    throw new ResponseException(500, "could not validate game");
   }
 
   public String list() throws ResponseException {
@@ -262,10 +382,28 @@ public class Client {
   }
 
 
-  public void printBoard(ChessGame game, boolean isWhiteView) {
+  public void printBoard(ChessGame game, boolean isWhiteView, Collection<ChessMove> moves, ChessPosition start) {
     ChessPiece[][] board=game.getBoard().getBoard();
     String[][] stringBoard=convertBoard(board);
-    chessIllustrator.drawBoard(stringBoard, isWhiteView);
+    boolean[][] possibleMoves=addMoves(moves, start);
+    chessIllustrator.drawBoard(stringBoard, isWhiteView, possibleMoves);
+  }
+
+  public boolean[][] addMoves(Collection<ChessMove> moves, ChessPosition start) {
+    if (moves != null && start != null) {
+
+      boolean[][] result=new boolean[8][8];
+      int x=start.getRow() - 1;
+      int y=start.getColumn() - 1;
+      result[x][y]=true;
+      for (ChessMove move : moves) {
+        x=move.getEndPosition().getRow() - 1;
+        y=move.getEndPosition().getColumn() - 1;
+        result[x][y]=true;
+      }
+      return result;
+    }
+    return null;
   }
 
   String[][] convertBoard(ChessPiece[][] board) {
@@ -303,6 +441,33 @@ public class Client {
     return getString(piece, symbols);
   }
 
+  public static ChessPosition checkCoord(String move) throws ResponseException {
+    if (move.length() != 2) {
+      throw new ResponseException(500, "expect: <row><col>");
+    }
+    int col=move.charAt(0) - 'a' + 1;
+    int row=Character.getNumericValue(move.charAt(1));
+    if (row < 0) {
+      row*=-1;
+    }
+    if (col >= 1 && col <= 8 && row >= 1 && row <= 8) {
+      return new ChessPosition(row, col);
+    }
+    throw new ResponseException(500, "position out of board");
+  }
+
+
+  public String leave() throws ResponseException {
+    checkAuth();
+    if (gameState != GameState.PLAYING) {
+      return "you are not playing a game";
+    }
+    websocketFacade.leaveGame(serverFacade.getAuthToken(), this.identificaton);
+    identificaton=-1;
+    websocketFacade=null;
+    gameState=GameState.NOTPLAYING;
+    return "You have left the game";
+  }
 
 }
 

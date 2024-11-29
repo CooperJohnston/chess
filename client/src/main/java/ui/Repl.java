@@ -1,9 +1,7 @@
 package ui;
 
 import chess.ChessGame;
-import chess.ChessPiece;
 import com.google.gson.Gson;
-import ui.EscapeSequences.*;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
@@ -17,7 +15,7 @@ public class Repl implements ServerNotifications {
   private final Client client;
 
   public Repl(String url) {
-    client=new Client(url);
+    client=new Client(url, this);
   }
 
   public void run() {
@@ -80,9 +78,9 @@ public class Repl implements ServerNotifications {
     } else if (note.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
       var game=new Gson().fromJson(message, LoadGameMessage.class).getGame();
       if (this.client.color == ChessGame.TeamColor.BLACK) {
-        this.client.printBoard(game, false);
+        this.client.printBoard(game, false, null, null);
       } else {
-        this.client.printBoard(game, true);
+        this.client.printBoard(game, true, null, null);
       }
     } else {
       System.out.println(message);

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dataaccess.*;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
@@ -17,6 +18,8 @@ import service.GameService;
 import service.UserService;
 import spark.*;
 
+
+@WebSocket
 public class Server {
   private final UserService userService;
   UserDAO userDAO;
