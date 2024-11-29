@@ -1,7 +1,6 @@
 package ui;
 
 import chess.ChessGame;
-import chess.ChessPiece;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameData;
@@ -10,11 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static ui.EscapeSequences.*;
-import static ui.EscapeSequences.WHITE_BISHOP;
-
 public class Client {
-  public ChessGame.TeamColor color;
   private String username=null;
   private String password=null;
   private ChessIllustrator chessIllustrator;
@@ -259,48 +254,6 @@ public class Client {
       throw new ResponseException(400, "Sign in to complete this task.");
     }
 
-  }
-
-
-  public void printBoard(ChessGame game, boolean isWhiteView) {
-    ChessPiece[][] board=game.getBoard().getBoard();
-    String[][] stringBoard=convertBoard(board);
-    chessIllustrator.drawBoard(stringBoard, isWhiteView);
-  }
-
-  String[][] convertBoard(ChessPiece[][] board) {
-    int rows=board.length;
-    int cols=board[0].length;
-    String[][] stringBoard=new String[rows][cols];
-
-    for (int i=0; i < rows; i++) {
-      for (int j=0; j < cols; j++) {
-        stringBoard[i][j]=getPiece(board[i][j]);
-      }
-    }
-    return stringBoard;
-  }
-
-  public static String getString(ChessPiece piece, String[] symbols) {
-    return switch (piece.getPieceType()) {
-      case ChessPiece.PieceType.PAWN -> symbols[0];
-      case ChessPiece.PieceType.ROOK -> symbols[1];
-      case ChessPiece.PieceType.KNIGHT -> symbols[2];
-      case ChessPiece.PieceType.KING -> symbols[3];
-      case ChessPiece.PieceType.QUEEN -> symbols[4];
-      case ChessPiece.PieceType.BISHOP -> symbols[5];
-    };
-  }
-
-  public static String getPiece(ChessPiece piece) {
-    if (piece == null) {
-      return "   ";
-    }
-    String[] symbols=piece.getTeamColor() == ChessGame.TeamColor.BLACK
-            ? new String[]{BLACK_PAWN, BLACK_ROOK, BLACK_KNIGHT, BLACK_KING, BLACK_QUEEN, BLACK_BISHOP}
-            : new String[]{WHITE_PAWN, WHITE_ROOK, WHITE_KNIGHT, WHITE_KING, WHITE_QUEEN, WHITE_BISHOP};
-
-    return getString(piece, symbols);
   }
 
 

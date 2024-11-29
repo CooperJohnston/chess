@@ -1,19 +1,12 @@
 package ui;
 
-import chess.ChessGame;
-import chess.ChessPiece;
-import com.google.gson.Gson;
 import ui.EscapeSequences.*;
-import websocket.messages.ErrorMessage;
-import websocket.messages.LoadGameMessage;
-import websocket.messages.Notification;
-import websocket.messages.ServerMessage;
 
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class Repl implements ServerNotifications {
+public class Repl {
   private final Client client;
 
   public Repl(String url) {
@@ -68,27 +61,4 @@ public class Repl implements ServerNotifications {
     System.out.print(SET_BG_COLOR_WHITE + SET_TEXT_COLOR_BLACK);
 
   }
-
-  @Override
-  public void notify(String message) {
-    System.out.println();
-    ServerMessage note=new Gson().fromJson(message, ServerMessage.class);
-    if (note.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
-      System.out.println(new Gson().fromJson(message, Notification.class).getMesssage());
-    } else if (note.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
-      System.out.println(new Gson().fromJson(message, ErrorMessage.class).getError());
-    } else if (note.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
-      var game=new Gson().fromJson(message, LoadGameMessage.class).getGame();
-      if (this.client.color == ChessGame.TeamColor.BLACK) {
-        this.client.printBoard(game, false);
-      } else {
-        this.client.printBoard(game, true);
-      }
-    } else {
-      System.out.println(message);
-    }
-    printPrompt();
-  }
-
 }
-
