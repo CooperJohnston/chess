@@ -181,4 +181,8 @@ public class ChessBoard {
     return copy;
   }
 
+  public ChessPiece[][] getBoard() {
+    return board;
+  }
+
 }
