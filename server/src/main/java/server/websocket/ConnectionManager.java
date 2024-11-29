@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
+  //  public final ConcurrentHashMap<String, Connection> connections = ;
   private final Map<Integer, ConcurrentHashMap<String, Connection>> games=new HashMap<>();
 
   public void add(String visitorName, Session session, int game) {
@@ -28,6 +29,7 @@ public class ConnectionManager {
 
 
   }
+
 
   public void remove(String authToken, int game) {
     var connections=games.get(game);

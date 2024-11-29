@@ -12,7 +12,7 @@ import service.UserService;
 import websocket.commands.JoinGameCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
-import websocket.messages.ErrorMessage;
+import websocket.messages.Error;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
@@ -42,13 +42,13 @@ public class WebSocketHandler {
     GameData game=getGame(command.getGameID());
 
     if (token == null) {
-      ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid game authtoken");
+      Error error=new Error(ServerMessage.ServerMessageType.ERROR, "invalid game authtoken");
       session.getRemote().sendString(error.toString());
       return;
     }
     if (game == null) {
 
-      ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "invalid game id");
+      Error error=new Error(ServerMessage.ServerMessageType.ERROR, "invalid game id");
       session.getRemote().sendString(error.toString());
       return;
     }
@@ -97,12 +97,12 @@ public class WebSocketHandler {
     GameData data=getGame(gameID);
     ChessGame.TeamColor winner=game.getWinner();
     if (winner != null) {
-      var error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "game is already over");
+      var error=new Error(ServerMessage.ServerMessageType.ERROR, "game is already over");
       connectionManager.sendMessage(command.getAuthToken(), error, command.getGameID());
       return;
     }
     if (!Objects.equals(name, data.blackUsername()) && !Objects.equals(username, data.whiteUsername())) {
-      ErrorMessage error=new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "observers can't resign");
+      Error error=new Error(ServerMessage.ServerMessageType.ERROR, "observers can't resign");
       connectionManager.sendMessage(command.getAuthToken(), error, command.getGameID());
       return;
     }
@@ -171,7 +171,7 @@ public class WebSocketHandler {
     GameData gameData=getGame(command.getGameID());
 
     if (gameData == null || gameData.game() == null) {
-      connectionManager.sendMessage(command.getAuthToken(), new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Invalid game ID"), command.getGameID());
+      connectionManager.sendMessage(command.getAuthToken(), new Error(ServerMessage.ServerMessageType.ERROR, "Invalid game ID"), command.getGameID());
       return;
     }
 
@@ -180,7 +180,7 @@ public class WebSocketHandler {
     String username=authService.getAuthData(command.getAuthToken()).username();
 
     if (turn == null) {
-      connectionManager.sendMessage(command.getAuthToken(), new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Invalid turn"), command.getGameID());
+      connectionManager.sendMessage(command.getAuthToken(), new Error(ServerMessage.ServerMessageType.ERROR, "Invalid turn"), command.getGameID());
       return;
     }
 
@@ -192,7 +192,7 @@ public class WebSocketHandler {
     }
 
     if (!Objects.equals(yourColor, turn)) {
-      connectionManager.sendMessage(command.getAuthToken(), new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Not your turn or observer core"), command.getGameID());
+      connectionManager.sendMessage(command.getAuthToken(), new Error(ServerMessage.ServerMessageType.ERROR, "Not your turn or observer core"), command.getGameID());
       return;
     }
 
@@ -203,7 +203,7 @@ public class WebSocketHandler {
       String errorM=String.format("Move from %s to %s is invalid",
               convertCoords(command.getMove().getStartPosition().getRow(), command.getMove().getStartPosition().getColumn(),
                       command.getMove().getEndPosition().getColumn(), command.getMove().getEndPosition().getRow()));
-      connectionManager.sendMessage(command.getAuthToken(), new ErrorMessage(ServerMessage.ServerMessageType.ERROR, errorM), command.getGameID());
+      connectionManager.sendMessage(command.getAuthToken(), new Error(ServerMessage.ServerMessageType.ERROR, errorM), command.getGameID());
       return;
     }
 
