@@ -16,9 +16,9 @@ public class ChessIllustrator {
   public void beginGame() {
     outStream.print(ERASE_SCREEN);
     String[][] chessBoard=init();
-    drawBoard(reverseBoard(chessBoard), false, null);
+    drawBoard(reverseBoard(chessBoard), false);
     outStream.println();
-    drawBoard(chessBoard, true, null);
+    drawBoard(chessBoard, true);
 
   }
 
@@ -127,23 +127,18 @@ public class ChessIllustrator {
   }
 
 
-  public void drawBoard(String[][] board, boolean isWhiteView, boolean[][] possibleMoves) {
+  public void drawBoard(String[][] board, boolean isWhiteView) {
 
     outStream.print(SET_BG_COLOR_DARK_GREEN);
 
     outStream.print(SET_TEXT_COLOR_WHITE);
-
-    if (possibleMoves == null) {
-      possibleMoves=new boolean[8][8];
-    }
-
     drawHeaders(isWhiteView);
     boolean startYellow=true;
     int rowNumber=isWhiteView ? 8 : 1;
     int rowIncrement=isWhiteView ? -1 : 1;
 
     for (String[] row : board) {
-      drawRow(row, startYellow, rowNumber, possibleMoves[rowNumber - 1]);
+      drawRow(row, startYellow, rowNumber);
       startYellow=!startYellow;
       rowNumber+=rowIncrement;
     }
@@ -152,7 +147,7 @@ public class ChessIllustrator {
 
   }
 
-  public void drawRow(String[] row, boolean startYellow, int rowNumber, boolean[] possibleMoves) {
+  public void drawRow(String[] row, boolean startYellow, int rowNumber) {
     outStream.print(SET_BG_COLOR_DARK_GREEN);
 
     outStream.print(SET_TEXT_COLOR_WHITE);
@@ -160,21 +155,8 @@ public class ChessIllustrator {
     String format="%" + width + "s";
     outStream.print(center(String.valueOf(rowNumber), width));
     boolean isYellow=startYellow;
-    int i=0;
     for (String space : row) {
-      boolean coloredSpot;
-      if (possibleMoves[i] == true) {
-        coloredSpot=true;
-      } else {
-        coloredSpot=false;
-      }
-      if (coloredSpot) {
-        outStream.print(SET_BG_COLOR_GREEN);
-        color(space);
-      }
-
-
-      if (isYellow && !coloredSpot) {
+      if (isYellow) {
         outStream.print(SET_BG_COLOR_LIGHT_GREY);
         color(space);
 
@@ -184,7 +166,7 @@ public class ChessIllustrator {
       }
       outStream.print(space);
       isYellow=!isYellow;
-      i++;
+
     }
     outStream.print(SET_BG_COLOR_DARK_GREEN);
 

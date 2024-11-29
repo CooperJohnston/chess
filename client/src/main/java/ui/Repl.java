@@ -1,8 +1,10 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessPiece;
 import com.google.gson.Gson;
-import websocket.messages.Error;
+import ui.EscapeSequences.*;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
@@ -11,20 +13,29 @@ import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-
 public class Repl implements ServerNotifications {
-  Client client;
+  private final Client client;
 
-  public Repl(String site) {
-    this.client=new Client(site, this);
+  public Repl(String url) {
+    client=new Client(url);
   }
 
-
   public void run() {
-    System.out.println(SET_TEXT_COLOR_BLUE + "♘ Welcome to the Chess. Sign in or Register to start.");
-
-    System.out.print(client.help());
-
+    System.out.println(SET_BG_COLOR_WHITE + SET_TEXT_COLOR_BLACK + SET_TEXT_BOLD + "Welcome to CS 240 Chess!");
+    String[] pieces=new String[]{BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, BLACK_KING, BLACK_KNIGHT, BLACK_PAWN,
+            BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, BLACK_KING, BLACK_KNIGHT, BLACK_PAWN};
+    for (String piece : pieces) {
+      System.out.print(piece);
+    }
+    System.out.println(RESET_TEXT_BOLD_FAINT);
+    System.out.println("Register or Login to get started!");
+    System.out.println("Type 'help' for more information.");
+    for (String piece : pieces) {
+      System.out.print(piece);
+    }
+    System.out.println();
+    System.out.println(SET_TEXT_FAINT + "© 2024 Vandalay Industries");
+    System.out.println(RESET_TEXT_BOLD_FAINT);
     Scanner scanner=new Scanner(System.in);
     var result="";
     while (!result.equals("quit")) {
@@ -32,43 +43,52 @@ public class Repl implements ServerNotifications {
       String line=scanner.nextLine();
 
       try {
+        for (String piece : pieces) {
+          System.out.print(piece);
+        }
+        System.out.println();
         result=client.eval(line);
-        System.out.print(SET_TEXT_COLOR_BLUE + result);
+        System.out.print(result);
+        System.out.println();
+        for (String piece : pieces) {
+          System.out.print(piece);
+        }
+        System.out.println();
       } catch (Throwable e) {
         var msg=e.toString();
         System.out.print(msg);
       }
     }
-    System.out.println();
+
   }
+
 
   private void printPrompt() {
-    if (client.playing == GameState.PLAYING) {
-      System.out.print("\n" + RESET_BG_COLOR + SET_TEXT_COLOR_BLUE + "[" + client.playing + "] >>> " + SET_TEXT_COLOR_GREEN);
-      return;
-    }
-    System.out.print("\n" + RESET_BG_COLOR + SET_TEXT_COLOR_BLUE + "[" + client.state + "] >>> " + SET_TEXT_COLOR_GREEN);
-  }
+    System.out.print(SET_TEXT_COLOR_BLUE + "\n" + SET_BG_COLOR_BLACK + ">>> ");
+    System.out.print(SET_BG_COLOR_WHITE + SET_TEXT_COLOR_BLACK);
 
+  }
 
   @Override
   public void notify(String message) {
     System.out.println();
     ServerMessage note=new Gson().fromJson(message, ServerMessage.class);
     if (note.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
-      System.out.println(new Gson().fromJson(message, Notification.class).getMessage());
+      System.out.println(new Gson().fromJson(message, Notification.class).getMesssage());
     } else if (note.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
-      System.out.println(new Gson().fromJson(message, Error.class).getErrorMessage());
+      System.out.println(new Gson().fromJson(message, ErrorMessage.class).getError());
     } else if (note.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
       var game=new Gson().fromJson(message, LoadGameMessage.class).getGame();
       if (this.client.color == ChessGame.TeamColor.BLACK) {
-        System.out.println(this.client.printBlackBoard(game));
+        this.client.printBoard(game, false);
       } else {
-        System.out.println(this.client.printWhite(game));
+        this.client.printBoard(game, true);
       }
     } else {
       System.out.println(message);
     }
     printPrompt();
   }
+
 }
+
