@@ -21,6 +21,7 @@ public class Client {
   WebsocketFacade websocketFacade;
   private final String url;
   private Repl repl;
+  private int gameId;
 
   public Client(String url, Repl repl) {
 
@@ -45,7 +46,8 @@ public class Client {
       }
       if (gameState == GameState.PLAYING) {
         return switch (cmd) {
-          //case "move" -> makeMove(params);
+          case "leave" -> leave();
+
           //case "resign" -> resign();
           //case "showmoves" -> listMoves(params);
           default -> help();
@@ -137,6 +139,7 @@ public class Client {
             break;
           }
         }
+        this.gameId=gameId;
         serverFacade.join(gameId, playerColor);
         this.gameState=GameState.PLAYING;
         websocketFacade=new WebsocketFacade(url, this.repl);
@@ -273,6 +276,22 @@ public class Client {
       throw new ResponseException(400, "Sign in to complete this task.");
     }
 
+  }
+
+  public String leave() throws ResponseException {
+    try {
+      checkAuth();
+      if (gameState != GameState.PLAYING) {
+        return "you are not playing a game";
+      }
+      websocketFacade.leaveGame(serverFacade.getAuthToken(), this.gameId);
+      this.gameId-=1;
+      websocketFacade=null;
+      gameState=GameState.NOTPLAYING;
+      return "You have left the game";
+    } catch (Exception e) {
+      return "couldn't leave the game";
+    }
   }
 
 
