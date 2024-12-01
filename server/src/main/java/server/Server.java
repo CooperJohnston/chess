@@ -249,6 +249,6 @@ public class Server {
 
   @OnWebSocketMessage
   public void message(Session session, String message) throws Exception {
-    webSocketHandler.onMessage(message, session);
+    webSocketHandler.onMessage(session, message);
   }
 }

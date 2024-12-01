@@ -2,6 +2,7 @@ package server.websocket;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -35,7 +36,7 @@ public class WebSocketHandler {
   }
 
   @OnWebSocketMessage
-  public void onMessage(String message, Session session) throws IOException {
+  public void onMessage(Session session, String message) throws IOException {
     try {
       UserGameCommand command=new Gson().fromJson(message, UserGameCommand.class);
       boolean authorized=authService.authenticate(command.getAuthToken());
@@ -62,28 +63,36 @@ public class WebSocketHandler {
 
   public void connect(String message, Session session) throws IOException {
     try {
+      // Parse command
       JoinGameCommand command=new Gson().fromJson(message, JoinGameCommand.class);
+
+      // Add session to connection manager
       connectionManager.add(command.getAuthToken(), session, command.getGameID());
+
+      // Retrieve username and game
       String username=authService.getAuthData(command.getAuthToken()).username();
       ChessGame chessGame=getGame(command.getGameID()).game();
-      if (command.getColor() == null) {
-        String messageReturn=String.format("%s has joined your game", username);
-        var obs=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, chessGame);
-        connectionManager.sendMessage(command.getAuthToken(), obs, command.getGameID());
 
-        var notification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, messageReturn);
-        connectionManager.broadcast(command.getAuthToken(), notification, command.getGameID());
+      // Prepare and send game load message
+      var loadGameMessage=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, chessGame);
+      connectionManager.sendMessage(command.getAuthToken(), loadGameMessage, command.getGameID());
 
-      } else {
-        var obs=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, chessGame);
-        connectionManager.sendMessage(command.getAuthToken(), obs, command.getGameID());
-        String messageReturn=String.format("%s has joined your game as %s", username, command.getColor());
-        var notification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, messageReturn);
-        connectionManager.broadcast(command.getAuthToken(), notification, command.getGameID());
+      // Prepare and broadcast notification
+      String messageReturn=command.getColor() == null
+              ? String.format("%s has joined your game", username)
+              : String.format("%s has joined your game as %s", username, command.getColor());
+      var notification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, messageReturn);
+      connectionManager.broadcast(command.getAuthToken(), notification, command.getGameID());
 
-      }
+    } catch (JsonSyntaxException e) {
+      // Handle JSON parsing errors
+      throw new IOException("Failed to parse JoinGameCommand", e);
+    } catch (NullPointerException e) {
+      // Handle missing data
+      throw new IllegalArgumentException("Invalid command: required fields are missing", e);
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      // General fallback for unexpected issues
+      throw new RuntimeException("An unexpected error occurred", e);
     }
   }
 

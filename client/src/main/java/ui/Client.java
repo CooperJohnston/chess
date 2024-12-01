@@ -4,23 +4,30 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameData;
+import websocket.WebsocketFacade;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
 public class Client {
+  public ChessGame.TeamColor color;
   private String username=null;
   private String password=null;
   private ChessIllustrator chessIllustrator;
   private final ServerFacade serverFacade;
   private State state=State.SIGNEDOUT;
   private GameState gameState;
+  WebsocketFacade websocketFacade;
+  private final String url;
+  private Repl repl;
 
-  public Client(String url) {
+  public Client(String url, Repl repl) {
 
     serverFacade=new ServerFacade(url);
     this.chessIllustrator=new ChessIllustrator();
+    this.url=url;
+    this.repl=repl;
   }
 
   public String eval(String input) {
@@ -33,6 +40,14 @@ public class Client {
           case "register" -> register(params);
           case "login" -> login(params);
           case "quit" -> "quit";
+          default -> help();
+        };
+      }
+      if (gameState == GameState.PLAYING) {
+        return switch (cmd) {
+          //case "move" -> makeMove(params);
+          //case "resign" -> resign();
+          //case "showmoves" -> listMoves(params);
           default -> help();
         };
       } else {
@@ -123,13 +138,17 @@ public class Client {
           }
         }
         serverFacade.join(gameId, playerColor);
-        chessIllustrator.beginGame();
+        this.gameState=GameState.PLAYING;
+        websocketFacade=new WebsocketFacade(url, this.repl);
+        try {
+          websocketFacade.playGame(playerColor, serverFacade.getAuthToken(), gameId);
+        } catch (Exception e) {
+          return e.getMessage();
+        }
         return String.format("%s joined game %s as the %s player", username, Integer.parseInt(params[0]), playerColor);
       }
     } catch (Exception e) {
-      return "We couldn't find that game spot. \nMake sure you have: " +
-              "\n -a valid game number from the list\n" + " -specified either black or white" +
-              "\n -and you are not trying to join a full spot ;)";
+      return e.getMessage();
 
     }
     return "Unable to join game. Did you specify a number AND valid team color?" +
@@ -257,5 +276,12 @@ public class Client {
   }
 
 
+  public String printWhite(ChessGame game) {
+    return "Test Print";
+  }
+
+  public String printBlack(ChessGame game) {
+    return "Test Print";
+  }
 }
 
