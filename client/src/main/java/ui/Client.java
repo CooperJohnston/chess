@@ -103,7 +103,7 @@ public class Client {
       if (params.length == 1) {
         checkAuth();
         int gameId=Integer.parseInt(params[0]);
-        String gameName="Null";
+        String gameName=null;
         ArrayList<GameData> gameData=serverFacade.list();
         for (int i=0; i < gameData.size(); i++) {
           GameData game=gameData.get(i);
@@ -113,12 +113,15 @@ public class Client {
             break;
           }
         }
+        assert gameName != null;
         serverFacade.observe(gameId);
-        chessIllustrator.beginGame();
+        websocketFacade=new WebsocketFacade(this.url, this.repl);
+        websocketFacade.playGame(null, serverFacade.getAuthToken(), gameId);
+        this.gameState=GameState.PLAYING;
         return String.format("%s is observing game %s.", username, gameName);
       }
     } catch (Exception e) {
-      return "We faailed to find a Game with the ID you gave us. " +
+      return "We failed to find a Game with the ID you gave us. " +
               "\n :) Check your game ID is correct.";
     }
     return "We couldn't find a game to observe! Make sure you put in a game number. \n" +
@@ -146,16 +149,21 @@ public class Client {
         try {
           websocketFacade.playGame(playerColor, serverFacade.getAuthToken(), gameId);
         } catch (Exception e) {
-          return e.getMessage();
+          return "We are having trouble connecting you to other players. \n" +
+                  "Please try again later :)";
         }
         return String.format("%s joined game %s as the %s player", username, Integer.parseInt(params[0]), playerColor);
       }
     } catch (Exception e) {
-      return e.getMessage();
+      return "Be sure to format your command with:" +
+              "\n -the number of the game " +
+              "\n -the color you wish to use" + "\n" +
+              "For example: 'join 2 black' ";
 
     }
-    return "Unable to join game. Did you specify a number AND valid team color?" +
-            "\n Hint: Please specify either Black or White :)";
+    return "We couldn't find that game spot. \nMake sure you have: " +
+            "\n -a valid game number from the list\n" + " -specified either black or white" +
+            "\n -and you are not trying to join a full spot ;)";
   }
 
   public String list() throws ResponseException {
