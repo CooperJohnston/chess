@@ -1,14 +1,14 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameData;
 import websocket.WebsocketFacade;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 
 public class Client {
   public ChessGame.TeamColor color;
@@ -22,6 +22,7 @@ public class Client {
   private final String url;
   private Repl repl;
   private int gameId;
+  private Object games;
 
   public Client(String url, Repl repl) {
 
@@ -47,9 +48,9 @@ public class Client {
       if (gameState == GameState.PLAYING) {
         return switch (cmd) {
           case "leave" -> leave();
-
-          //case "resign" -> resign();
-          //case "showmoves" -> listMoves(params);
+          case "redraw" -> redraw();
+          case "resign" -> resign();
+          case "showmoves" -> listMoves(params);
           default -> help();
         };
       } else {
@@ -68,6 +69,46 @@ public class Client {
       return e.getMessage();
     }
   }
+
+  private String listMoves(String[] params) throws ResponseException {
+    try {
+      if (params.length != 1) {
+        return "Make sure you provide a command formatted like this:\n" +
+                "show <start_postion>";
+      }
+      ChessPosition start=assertCord(params[0]);
+      ArrayList<GameData> gameData=serverFacade.list();
+      for (GameData gameData1 : gameData) {
+        if (gameData1.gameID() == this.gameId) {
+          Collection<ChessMove> moves=gameData1.game().validMoves(start);
+
+          if (this.color == ChessGame.TeamColor.BLACK) {
+
+            return printValidBlack(start, moves, gameData1.game());
+
+          } else {
+            return printValidWhite(start, moves, gameData1.game());
+
+
+          }
+        }
+      }
+    } catch (Exception e) {
+      return "Make sure you provide coordinates with this format:\n" +
+              "<row><column>";
+    }
+    return "Game redrawn!";
+  }
+
+  private String printValidBlack(ChessPosition start, Collection<ChessMove> moves, ChessGame game) {
+
+    return "Here are all the valid moves for this position :)";
+  }
+
+  private String printValidWhite(ChessPosition start, Collection<ChessMove> moves, ChessGame game) {
+    return "Here are all the valid moves for this position :)";
+  }
+
 
   public String create(String... params) throws ResponseException {
     try {
@@ -118,6 +159,7 @@ public class Client {
         websocketFacade=new WebsocketFacade(this.url, this.repl);
         websocketFacade.playGame(null, serverFacade.getAuthToken(), gameId);
         this.gameState=GameState.PLAYING;
+        this.gameId=gameId;
         return String.format("%s is observing game %s.", username, gameName);
       }
     } catch (Exception e) {
@@ -203,6 +245,25 @@ public class Client {
 
   }
 
+  private String resign() throws ResponseException {
+    try {
+      checkAuth();
+      if (gameState != GameState.PLAYING) {
+        return "You are not playing a game, how can you resign?";
+      }
+      System.out.println("Resigning game...");
+      System.out.print("Are you sure you want to resign?\nY|N\n");
+      Scanner scanner=new Scanner(System.in);
+      String res=scanner.nextLine().strip();
+      if (res.equalsIgnoreCase("y")) {
+        websocketFacade.resign(serverFacade.getAuthToken(), this.gameId);
+      }
+      return "Goodbye! Play again soon!";
+    } catch (Exception e) {
+      return "We couldn't resign your game.";
+    }
+  }
+
   ChessGame.TeamColor getColor(String color) throws ResponseException {
     switch (color) {
       case "BLACK":
@@ -251,12 +312,13 @@ public class Client {
   public String help() {
     if (this.gameState == GameState.PLAYING) {
       return """
-              - Help
-              - Redraw
-              - Leave
-              - Move
-              - Resign
-              - HighlightMoves
+              When you are playing a game of chess, you can run any of these commands :)
+              
+              - Redraw - Draws and refreshes the Chess Board.
+              - Leave - Exits gameplay
+              - Move <Start> <End> - moves a piece from <Start> to <End>
+              - Resign - Surrender and end the game.
+              - Show <Start> - Highlights all moves that can be taken at this location.
               """;
     }
 
@@ -303,12 +365,47 @@ public class Client {
   }
 
 
-  public String printWhite(ChessGame game) {
-    return "Test Print";
+  public void printWhite(ChessGame game) {
+    chessIllustrator.drawBoard(game, true);
   }
 
-  public String printBlack(ChessGame game) {
-    return "Test Print";
+  public void printBlack(ChessGame game) {
+    chessIllustrator.drawBoard(game, false);
+  }
+
+  private String redraw() throws ResponseException {
+    checkAuth();
+    if (gameState != GameState.PLAYING) {
+      return "You are not playing a game, so we can't draw it :)";
+    }
+    ArrayList<GameData> gameData=serverFacade.list();
+    for (GameData gameData1 : gameData) {
+      if (gameData1.gameID() == this.gameId) {
+        if (this.color == ChessGame.TeamColor.BLACK) {
+          printBlack(gameData1.game());
+          return "Game redrawn!";
+        }
+        printWhite(gameData1.game());
+        return "Game redrawn!";
+      }
+    }
+    return "We couldn't find the game you want us to draw. " +
+            "\nCheck your connection :)";
+  }
+
+  public static ChessPosition assertCord(String move) throws records.ResponseException {
+    if (move.length() != 2) {
+      throw new records.ResponseException(500, "expect: <row><col>");
+    }
+    int col=move.charAt(0) - 'a' + 1;
+    int row=Character.getNumericValue(move.charAt(1));
+    if (row < 0) {
+      row*=-1;
+    }
+    if (col >= 1 && col <= 8 && row >= 1 && row <= 8) {
+      return new ChessPosition(row, col);
+    }
+    throw new records.ResponseException(500, "position out of board");
   }
 }
 

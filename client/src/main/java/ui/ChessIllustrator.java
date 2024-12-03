@@ -1,5 +1,8 @@
 package ui;
 
+import chess.ChessGame;
+import chess.ChessPiece;
+
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
@@ -184,5 +187,47 @@ public class ChessIllustrator {
     } else {
       outStream.print(SET_TEXT_COLOR_BLUE);
     }
+  }
+
+  public void drawBoard(ChessGame game, boolean isWhiteView) {
+    String[][] convertedBoard=convertBoard(game.getBoard().getBoard());
+    drawBoard(convertedBoard, isWhiteView);
+  }
+
+  String[][] convertBoard(ChessPiece[][] board) {
+    int rows=board.length;
+    int cols=board[0].length;
+    String[][] stringBoard=new String[rows][cols];
+    for (int i=0; i < rows; i++) {
+      for (int j=0; j < cols; j++) {
+        stringBoard[i][j]=getPiece(board[i][j]);
+      }
+    }
+    return stringBoard;
+  }
+
+  public static String getString(ChessPiece piece, String[] symbols) {
+    return switch (piece.getPieceType()) {
+      case ChessPiece.PieceType.PAWN -> symbols[0];
+      case ChessPiece.PieceType.ROOK -> symbols[1];
+      case ChessPiece.PieceType.KNIGHT -> symbols[2];
+      case ChessPiece.PieceType.KING -> symbols[3];
+      case ChessPiece.PieceType.QUEEN -> symbols[4];
+      case ChessPiece.PieceType.BISHOP -> symbols[5];
+    };
+  }
+
+  public String getPiece(ChessPiece piece) {
+    int width=5;
+    if (piece == null) {
+      return this.center(EMPTY, width);
+    }
+    String[] symbols=piece.getTeamColor() == ChessGame.TeamColor.BLACK
+            ? new String[]{center(BLACK_PAWN, width), center(BLACK_ROOK, width),
+            center(BLACK_KNIGHT, width), center(BLACK_KING, width), center(BLACK_QUEEN, width),
+            center(BLACK_BISHOP, width)}
+            : new String[]{center(WHITE_PAWN, width), center(WHITE_ROOK, width), center(WHITE_KNIGHT, width),
+            center(WHITE_KING, width), center(WHITE_QUEEN, width), center(WHITE_BISHOP, width)};
+    return getString(piece, symbols);
   }
 }

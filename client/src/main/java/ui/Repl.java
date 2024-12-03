@@ -78,9 +78,9 @@ public class Repl implements ServerObserver {
     } else if (note.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
       var game=new Gson().fromJson(message, LoadGameMessage.class).getGame();
       if (this.client.color == ChessGame.TeamColor.BLACK) {
-        System.out.println(this.client.printBlack(game));
+        client.printBlack(game);
       } else {
-        System.out.println(this.client.printWhite(game));
+        client.printWhite(game);
       }
     } else {
       System.out.println(message);
