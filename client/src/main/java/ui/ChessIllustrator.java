@@ -168,17 +168,20 @@ public class ChessIllustrator {
       } else {
         coloredSpot=false;
       }
-      if (coloredSpot) {
+      if (coloredSpot && isYellow) {
         outStream.print(SET_BG_COLOR_YELLOW);
         color(space);
-      } else if (isYellow) {
+      } else if (coloredSpot && !isYellow) {
+        outStream.print(SET_BG_COLOR_GREEN);
+        color(space);
+      } else if (isYellow && !coloredSpot) {
         outStream.print(SET_BG_COLOR_LIGHT_GREY);
         color(space);
       } else {
         outStream.print(SET_BG_COLOR_DARK_GREY);
         color(space);
       }
-      
+
       outStream.print(space);
       isYellow=!isYellow;
       i++;
@@ -237,7 +240,7 @@ public class ChessIllustrator {
     if (piece == null) {
       return this.center(EMPTY, width);
     }
-    String[] symbols=piece.getTeamColor() == ChessGame.TeamColor.BLACK
+    String[] symbols=piece.getTeamColor() == ChessGame.TeamColor.WHITE
             ? new String[]{center(BLACK_PAWN, width), center(BLACK_ROOK, width),
             center(BLACK_KNIGHT, width), center(BLACK_KING, width), center(BLACK_QUEEN, width),
             center(BLACK_BISHOP, width)}

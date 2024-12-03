@@ -163,10 +163,13 @@ public class DatabaseGameDAO implements GameDAO {
   @Override
   public void remove(int gameID) throws DataAccessException {
     var statement="DELETE FROM games WHERE gameID=?";
+
     try (Connection connection=DatabaseManager.getConnection()) {
-      try (PreparedStatement preparedStatement=connection.prepareStatement(statement, gameID)) {
+      try (PreparedStatement preparedStatement=connection.prepareStatement(statement)) {
+        preparedStatement.setInt(1, gameID);
         preparedStatement.executeUpdate();
       }
+
     } catch (SQLException | DataAccessException e) {
 
       throw new DataAccessException(e.getMessage());

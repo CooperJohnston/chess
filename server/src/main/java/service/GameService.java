@@ -93,7 +93,8 @@ public class GameService {
     }
     String userName=authData.username();
     if (ChessGame.TeamColor.WHITE.equals(gameRequest.getPlayerColor()) && gameData.whiteUsername() == null) {
-      GameData updateData=new GameData(gameData.gameID(), userName, gameData.blackUsername(), gameData.gameName(), gameData.game());
+      GameData updateData=new GameData(gameData.gameID(), userName, gameData.blackUsername(), gameData.gameName(),
+              gameData.game());
       gameDAO.updateGame(updateData);
       return new JoinGameResponse(gameRequest.getGameID(), ChessGame.TeamColor.WHITE);
     }

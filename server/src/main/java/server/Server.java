@@ -17,6 +17,7 @@ import service.GameService;
 import service.UserService;
 import spark.*;
 
+@WebSocket
 public class Server {
   private final UserService userService;
   UserDAO userDAO;
@@ -25,6 +26,7 @@ public class Server {
   private final GameService gameService;
   GameDAO gameDAO;
   private final WebSocketHandler webSocketHandler;
+
 
   public Server() {
     try {
@@ -46,7 +48,7 @@ public class Server {
 
     Spark.staticFiles.location("web");
 
-    Spark.webSocket("/ws", webSocketHandler);
+    Spark.webSocket("/ws", Server.class);
 
     // Register your endpoints and handle exceptions here.
     Spark.delete("/db", this::clear);
@@ -207,7 +209,6 @@ public class Server {
     try {
       String auth=req.headers("Authorization");
       var joinGameReq=new Gson().fromJson(req.body(), JoinGameRequest.class);
-      String charles=req.body();
       joinGameReq.setAuth(auth);
       authService.authenticate(auth);
       JoinGameResponse joinGameResp=gameService.joinGame(joinGameReq);
@@ -249,6 +250,6 @@ public class Server {
 
   @OnWebSocketMessage
   public void message(Session session, String message) throws Exception {
-    webSocketHandler.onMessage(session, message);
+    webSocketHandler.onMessage(message, session);
   }
 }

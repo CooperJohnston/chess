@@ -2,10 +2,12 @@ package ui;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameData;
+import server.websocket.WebSocketHandler;
 import websocket.WebsocketFacade;
 
 import java.util.*;
@@ -22,7 +24,7 @@ public class Client {
   private final String url;
   private Repl repl;
   private int gameId;
-  private Object games;
+  private ArrayList<GameData> games;
 
   public Client(String url, Repl repl) {
 
@@ -51,12 +53,13 @@ public class Client {
           case "redraw" -> redraw();
           case "resign" -> resign();
           case "show" -> listMoves(params);
+          case "move" -> makeMove(params);
           default -> help();
         };
       } else {
         return switch (cmd) {
           case "list" -> list();
-          case "join" -> join(params);
+          case "join" -> joinGame(params);
           case "observe" -> observe(params);
           case "logout" -> logout();
           case "quit" -> "quit";
@@ -142,79 +145,97 @@ public class Client {
     }
   }
 
-  public String observe(String... params) throws ResponseException {
-    try {
-      if (params.length == 1) {
-        checkAuth();
-        int gameId=Integer.parseInt(params[0]);
-        String gameName=null;
-        ArrayList<GameData> gameData=serverFacade.list();
-        for (int i=0; i < gameData.size(); i++) {
-          GameData game=gameData.get(i);
-          if (i + 1 == gameId) {
-            gameId=game.gameID();
-            gameName=game.gameName();
-            break;
+  public String observe(String[] params) throws ResponseException {
+    checkAuth();
+    int id;
+    if (params.length == 1) {
+      try {
+        id=Integer.parseInt(params[0]);
+      } catch (NumberFormatException e) {
+        throw new ResponseException(401, "input must be a valid index");
+      }
+      int i=1;
+      for (var game : this.games) {
+        if (i == id) {
+          try {
+            websocketFacade=new WebsocketFacade(this.url, this.repl);
+            websocketFacade.playGame(null, this.serverFacade.getAuthToken(), game.gameID());
+            this.gameState=GameState.PLAYING;
+            return "";
+          } catch (ResponseException e) {
+            return e.getMessage();
           }
         }
-        assert gameName != null;
-        serverFacade.observe(gameId);
+        i++;
+      }
+      throw new ResponseException(400, "invalid ID");
+    } else {
+      throw new ResponseException(400, "Expected: <your name> <password>");
+    }
+
+  }
+
+  //return "We failed to find a Game with the ID you gave us. " +
+  //"\n :) Check your game ID is correct.";
+
+  //return "We couldn't find a game to observe! Make sure you put in a game number. \n" +
+  //"Hint: You can find games to join using the 'list' command";
+
+
+  public String joinGame(String[] params) throws ResponseException {
+    checkAuth();
+
+    if (params.length != 2) {
+      throw new ResponseException(400, "Expected: join <gameID> <[BLACK|WHITE]>");
+    }
+
+    int id;
+    try {
+      id=Integer.parseInt(params[0]);
+    } catch (NumberFormatException e) {
+      throw new ResponseException(401, "input must be a valid index");
+    }
+
+    int i=1;
+    for (var game : this.games) {
+      if (i != id) {
+        i++;
+        continue;
+      }
+
+      String chosenColor=params[1].strip().toUpperCase();
+      boolean isWhite=chosenColor.equals("WHITE");
+      boolean isBlack=chosenColor.equals("BLACK");
+
+      if (!isWhite && !isBlack) {
+        throw new ResponseException(400, "Invalid color. Choose BLACK or WHITE.");
+      }
+      this.color=isWhite ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+      boolean isUserValid=(isWhite && username.equals(game.whiteUsername())) ||
+              (isBlack && username.equals(game.blackUsername()));
+      if (isUserValid) {
+        this.gameState=GameState.PLAYING;
+        this.gameId=game.gameID();
         websocketFacade=new WebsocketFacade(this.url, this.repl);
-        websocketFacade.playGame(null, serverFacade.getAuthToken(), gameId);
-        this.gameState=GameState.PLAYING;
-        this.gameId=gameId;
-        return String.format("%s is observing game %s.", username, gameName);
+        websocketFacade.playGame(color, this.serverFacade.getAuthToken(), game.gameID());
+        return "";
       }
-    } catch (Exception e) {
-      return "We failed to find a Game with the ID you gave us. " +
-              "\n :) Check your game ID is correct.";
+      serverFacade.join(game.gameID(), color);
+      this.gameState=GameState.PLAYING;
+      websocketFacade=new WebsocketFacade(this.url, this.repl);
+      websocketFacade.playGame(color, this.serverFacade.getAuthToken(), game.gameID());
+      this.gameId=game.gameID();
+      return "";
     }
-    return "We couldn't find a game to observe! Make sure you put in a game number. \n" +
-            "Hint: You can find games to join using the 'list' command";
+    throw new ResponseException(400, "invalid ID");
   }
 
-  public String join(String... params) {
-    try {
-      if (params.length == 2) {
-        checkAuth();
-        int gameId=Integer.parseInt(params[0]);
-        ChessGame.TeamColor playerColor=getColor(params[1].toUpperCase());
-        ArrayList<GameData> gameData=serverFacade.list();
-        for (int i=0; i < gameData.size(); i++) {
-          GameData game=gameData.get(i);
-          if (i + 1 == gameId) {
-            gameId=game.gameID();
-            break;
-          }
-        }
-        this.gameId=gameId;
-        serverFacade.join(gameId, playerColor);
-        this.gameState=GameState.PLAYING;
-        websocketFacade=new WebsocketFacade(url, this.repl);
-        try {
-          websocketFacade.playGame(playerColor, serverFacade.getAuthToken(), gameId);
-        } catch (Exception e) {
-          return "We are having trouble connecting you to other players. \n" +
-                  "Please try again later :)";
-        }
-        return String.format("%s joined game %s as the %s player", username, Integer.parseInt(params[0]), playerColor);
-      }
-    } catch (Exception e) {
-      return "Be sure to format your command with:" +
-              "\n -the number of the game " +
-              "\n -the color you wish to use" + "\n" +
-              "For example: 'join 2 black' ";
-
-    }
-    return "We couldn't find that game spot. \nMake sure you have: " +
-            "\n -a valid game number from the list\n" + " -specified either black or white" +
-            "\n -and you are not trying to join a full spot ;)";
-  }
 
   public String list() throws ResponseException {
     try {
       checkAuth();
       ArrayList<GameData> chessGames=serverFacade.list();
+      this.games=chessGames;
       var result=new StringBuilder();
       var gson=new Gson();
       if (chessGames.isEmpty()) {
@@ -246,6 +267,50 @@ public class Client {
       return "Unable to list games. An internal error occurred.";
     }
 
+  }
+
+  private String makeMove(String[] params) throws ResponseException {
+    checkAuth();
+    if (gameState != GameState.PLAYING) {
+      return "you are not playing a game";
+    }
+    if (params.length != 2 && params.length != 3) {
+      return "format your command with <Start_Position> <End_Position>";
+    }
+    try {
+      ChessPosition start=assertCord(params[0]);
+      ChessPosition end=assertCord(params[1]);
+
+      String promotion="null";
+      if (params.length == 3) {
+        promotion=params[2];
+      }
+      this.games=this.serverFacade.list();
+      GameData game=null;
+      for (var c : this.games) {
+        if (c.gameID() == this.gameId) {
+          game=c;
+        }
+      }
+      assert game != null;
+      ChessPiece piece=game.game().getBoard().getPiece(start);
+      if (piece == null) {
+        return "no piece to move";
+
+      }
+      if (piece.getTeamColor() != this.color) {
+        return "You cannot move that piece";
+      }
+      try {
+        websocketFacade.makeMove(start, end, promotion, serverFacade.getAuthToken(), game.gameID(), this.color);
+        return "";
+      } catch (Exception e) {
+        throw new ResponseException(500, e.getMessage());
+      }
+
+    } catch (Exception e) {
+      return e.getMessage();
+    }
   }
 
   private String resign() throws ResponseException {
@@ -396,9 +461,9 @@ public class Client {
             "\nCheck your connection :)";
   }
 
-  public static ChessPosition assertCord(String move) throws records.ResponseException {
+  public static ChessPosition assertCord(String move) throws ResponseException {
     if (move.length() != 2) {
-      throw new records.ResponseException(500, "expect: <row><col>");
+      throw new ResponseException(500, "Try to format it like this: <row><col>");
     }
     int col=move.charAt(0) - 'a' + 1;
     int row=Character.getNumericValue(move.charAt(1));
@@ -408,7 +473,7 @@ public class Client {
     if (col >= 1 && col <= 8 && row >= 1 && row <= 8) {
       return new ChessPosition(row, col);
     }
-    throw new records.ResponseException(500, "position out of board");
+    throw new ResponseException(500, "position out of board");
   }
 
   public boolean[][] addMoves(Collection<ChessMove> moves, ChessPosition start) {
