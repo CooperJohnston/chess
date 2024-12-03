@@ -19,9 +19,9 @@ public class ChessIllustrator {
   public void beginGame() {
     outStream.print(ERASE_SCREEN);
     String[][] chessBoard=init();
-    drawBoard(reverseBoard(chessBoard), false);
+    drawBoard(reverseBoard(chessBoard), false, null);
     outStream.println();
-    drawBoard(chessBoard, true);
+    drawBoard(chessBoard, true, null);
 
   }
 
@@ -130,7 +130,7 @@ public class ChessIllustrator {
   }
 
 
-  public void drawBoard(String[][] board, boolean isWhiteView) {
+  public void drawBoard(String[][] board, boolean isWhiteView, boolean[][] moves) {
 
     outStream.print(SET_BG_COLOR_DARK_GREEN);
 
@@ -139,9 +139,12 @@ public class ChessIllustrator {
     boolean startYellow=true;
     int rowNumber=isWhiteView ? 8 : 1;
     int rowIncrement=isWhiteView ? -1 : 1;
+    if (moves == null) {
+      moves=new boolean[8][8];
+    }
 
     for (String[] row : board) {
-      drawRow(row, startYellow, rowNumber);
+      drawRow(row, startYellow, rowNumber, moves[rowNumber - 1]);
       startYellow=!startYellow;
       rowNumber+=rowIncrement;
     }
@@ -150,26 +153,35 @@ public class ChessIllustrator {
 
   }
 
-  public void drawRow(String[] row, boolean startYellow, int rowNumber) {
+  public void drawRow(String[] row, boolean startYellow, int rowNumber, boolean[] moves) {
     outStream.print(SET_BG_COLOR_DARK_GREEN);
 
     outStream.print(SET_TEXT_COLOR_WHITE);
     int width=5;
-    String format="%" + width + "s";
     outStream.print(center(String.valueOf(rowNumber), width));
     boolean isYellow=startYellow;
+    int i=0;
     for (String space : row) {
-      if (isYellow) {
+      boolean coloredSpot;
+      if (moves[i] == true) {
+        coloredSpot=true;
+      } else {
+        coloredSpot=false;
+      }
+      if (coloredSpot) {
+        outStream.print(SET_BG_COLOR_YELLOW);
+        color(space);
+      } else if (isYellow) {
         outStream.print(SET_BG_COLOR_LIGHT_GREY);
         color(space);
-
       } else {
-        color(space);
         outStream.print(SET_BG_COLOR_DARK_GREY);
+        color(space);
       }
+      
       outStream.print(space);
       isYellow=!isYellow;
-
+      i++;
     }
     outStream.print(SET_BG_COLOR_DARK_GREEN);
 
@@ -191,7 +203,10 @@ public class ChessIllustrator {
 
   public void drawBoard(ChessGame game, boolean isWhiteView) {
     String[][] convertedBoard=convertBoard(game.getBoard().getBoard());
-    drawBoard(convertedBoard, isWhiteView);
+    if (!isWhiteView) {
+      convertedBoard=reverseBoard(convertedBoard);
+    }
+    drawBoard(convertedBoard, isWhiteView, null);
   }
 
   String[][] convertBoard(ChessPiece[][] board) {
@@ -229,5 +244,14 @@ public class ChessIllustrator {
             : new String[]{center(WHITE_PAWN, width), center(WHITE_ROOK, width), center(WHITE_KNIGHT, width),
             center(WHITE_KING, width), center(WHITE_QUEEN, width), center(WHITE_BISHOP, width)};
     return getString(piece, symbols);
+  }
+
+  public void drawBoard(ChessPiece[][] board, boolean isWhiteView, boolean[][] validMoves) {
+    String[][] convertedBoard=convertBoard(board);
+    if (!isWhiteView) {
+      convertedBoard=reverseBoard(convertedBoard);
+    }
+    drawBoard(convertedBoard, isWhiteView, validMoves);
+
   }
 }

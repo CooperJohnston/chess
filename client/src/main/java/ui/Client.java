@@ -50,7 +50,7 @@ public class Client {
           case "leave" -> leave();
           case "redraw" -> redraw();
           case "resign" -> resign();
-          case "showmoves" -> listMoves(params);
+          case "show" -> listMoves(params);
           default -> help();
         };
       } else {
@@ -101,11 +101,14 @@ public class Client {
   }
 
   private String printValidBlack(ChessPosition start, Collection<ChessMove> moves, ChessGame game) {
-
+    boolean[][] validMoves=addMoves(moves, start);
+    chessIllustrator.drawBoard(game.getBoard().getBoard(), false, validMoves);
     return "Here are all the valid moves for this position :)";
   }
 
   private String printValidWhite(ChessPosition start, Collection<ChessMove> moves, ChessGame game) {
+    boolean[][] validMoves=addMoves(moves, start);
+    chessIllustrator.drawBoard(game.getBoard().getBoard(), true, validMoves);
     return "Here are all the valid moves for this position :)";
   }
 
@@ -406,6 +409,22 @@ public class Client {
       return new ChessPosition(row, col);
     }
     throw new records.ResponseException(500, "position out of board");
+  }
+
+  public boolean[][] addMoves(Collection<ChessMove> moves, ChessPosition start) {
+    if (moves != null && start != null) {
+      boolean[][] result=new boolean[8][8];
+      int x=start.getRow() - 1;
+      int y=start.getColumn() - 1;
+      result[x][y]=true;
+      for (ChessMove move : moves) {
+        x=move.getEndPosition().getRow() - 1;
+        y=move.getEndPosition().getColumn() - 1;
+        result[x][y]=true;
+      }
+      return result;
+    }
+    return null;
   }
 }
 
