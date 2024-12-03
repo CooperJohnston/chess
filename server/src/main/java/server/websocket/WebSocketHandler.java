@@ -3,6 +3,7 @@ package server.websocket;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import dataaccess.DataAccessException;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -38,6 +39,7 @@ public class WebSocketHandler {
 
   @OnWebSocketMessage
   public void onMessage(String message, Session session) throws Exception {
+    //System.out.println("Message received: " + message);
     UserGameCommand command=new Gson().fromJson(message, UserGameCommand.class);
     String token=authService.getAuthData(command.getAuthToken()).authToken();
     GameData game=getGame(command.getGameID());
@@ -47,12 +49,14 @@ public class WebSocketHandler {
       session.getRemote().sendString(error.toString());
       return;
     }
-    if (game == null) {
 
+    if (game == null) {
+      //System.out.println("Got game and auth successfully");
       Error error=new Error(ServerMessage.ServerMessageType.ERROR, "invalid game id");
       session.getRemote().sendString(error.toString());
       return;
     }
+
     connectionManager.add(command.getAuthToken(), session, command.getGameID());
     switch (command.getCommandType()) {
       case RESIGN -> resign(command.getAuthToken(), command.getGameID(), command);
@@ -60,42 +64,32 @@ public class WebSocketHandler {
       case LEAVE -> leave(command.getAuthToken(), command);
       case MAKE_MOVE -> makeMove(message);
     }
+    System.out.println("Did not dip in tho");
   }
 
 
-  public void connect(String message, Session session) throws IOException {
-    try {
-      // Parse command
-      JoinGameCommand command=new Gson().fromJson(message, JoinGameCommand.class);
+  public void connect(String message, Session session) throws IOException, DataAccessException {
+    JoinGameCommand command=new Gson().fromJson(message, JoinGameCommand.class);
+    connectionManager.add(command.getAuthToken(), session, command.getGameID());
+    String name=authService.getAuthData(command.getAuthToken()).authToken();
+    ChessGame game=getGame(command.getGameID()).game();
+    if (command.getColor() == null) {
+      String messageReturn=String.format("%s has joined your game", name);
+      var obs=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+      connectionManager.sendMessage(command.getAuthToken(), obs, command.getGameID());
 
-      // Add session to connection manager
-      connectionManager.add(command.getAuthToken(), session, command.getGameID());
-
-      // Retrieve username and game
-      String username=authService.getAuthData(command.getAuthToken()).username();
-      ChessGame chessGame=getGame(command.getGameID()).game();
-
-      // Prepare and send game load message
-      var loadGameMessage=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, chessGame);
-      connectionManager.sendMessage(command.getAuthToken(), loadGameMessage, command.getGameID());
-
-      // Prepare and broadcast notification
-      String messageReturn=command.getColor() == null
-              ? String.format("%s has joined your game", username)
-              : String.format("%s has joined your game as %s", username, command.getColor());
       var notification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, messageReturn);
       connectionManager.broadcast(command.getAuthToken(), notification, command.getGameID());
 
-    } catch (JsonSyntaxException e) {
-      // Handle JSON parsing errors
-      throw new IOException("Failed to parse JoinGameCommand", e);
-    } catch (NullPointerException e) {
-      // Handle missing data
-      throw new IllegalArgumentException("Invalid command: required fields are missing", e);
-    } catch (Exception e) {
-      // General fallback for unexpected issues
-      throw new RuntimeException("An unexpected error occurred", e);
+    } else {
+      var obs=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+      connectionManager.sendMessage(command.getAuthToken(), obs, command.getGameID());
+      String messageReturn=String.format("%s has joined your game as %s", name, command.getColor());
+      var notification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, messageReturn);
+      connectionManager.broadcast(command.getAuthToken(), notification, command.getGameID());
+
     }
+
   }
 
 
@@ -170,14 +164,11 @@ public class WebSocketHandler {
     try {
       GameData realGame=null;
       ArrayList<GameData> gameData=gameService.getAllGames();
-      int id=gameID;
-      int i=1;
       for (GameData game : gameData) {
-        if (i == id) {
+        if (game.gameID() == gameID) {
           realGame=game;
           break;
         }
-        i++;
       }
       return realGame;
     } catch (Exception e) {
@@ -192,6 +183,7 @@ public class WebSocketHandler {
     if (gameData == null || gameData.game() == null) {
       connectionManager.sendMessage(command.getAuthToken(),
               new Error(ServerMessage.ServerMessageType.ERROR, "Invalid game ID"), command.getGameID());
+
       return;
     }
 
@@ -200,6 +192,7 @@ public class WebSocketHandler {
     String username=authService.getAuthData(command.getAuthToken()).username();
 
     if (turn == null) {
+
       connectionManager.sendMessage(command.getAuthToken(),
               new Error(ServerMessage.ServerMessageType.ERROR, "Invalid turn"), command.getGameID());
       return;
@@ -213,20 +206,20 @@ public class WebSocketHandler {
     }
 
     if (!Objects.equals(yourColor, turn)) {
-      connectionManager.sendMessage(command.getAuthToken(), new Error(ServerMessage.ServerMessageType.ERROR, "Not your turn or observer core"), command.getGameID());
+      connectionManager.sendMessage(
+              command.getAuthToken(),
+              new Error(ServerMessage.ServerMessageType.ERROR,
+                      "You are either observing or it is not your turn :)"), command.getGameID());
       return;
     }
 
     try {
       chessGame.makeMove(command.getMove());
-      gameService.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(),
-              gameData.blackUsername(), gameData.gameName(), chessGame));
 
     } catch (Exception e) {
-      String errorM=String.format("Move from %s to %s is invalid",
-              convertCoords(command.getMove().getStartPosition().getRow(), command.getMove().getStartPosition().getColumn(),
-                      command.getMove().getEndPosition().getColumn(), command.getMove().getEndPosition().getRow()));
-      connectionManager.sendMessage(command.getAuthToken(), new Error(ServerMessage.ServerMessageType.ERROR, errorM), command.getGameID());
+      String errorM="You did not move correctly. How sad.";
+      connectionManager.sendMessage(command.getAuthToken(), new Error(ServerMessage.ServerMessageType.ERROR, errorM),
+              command.getGameID());
       return;
     }
 
@@ -234,7 +227,11 @@ public class WebSocketHandler {
     String note=String.format("%s moved %s", username,
             convertCoords(command.getMove().getStartPosition().getRow(), command.getMove().getStartPosition().getColumn(),
                     command.getMove().getEndPosition().getColumn(), command.getMove().getEndPosition().getRow()));
-    connectionManager.broadcast(command.getAuthToken(), new Notification(ServerMessage.ServerMessageType.NOTIFICATION, note), command.getGameID());
+    connectionManager.broadcast(command.getAuthToken(), new Notification(ServerMessage.ServerMessageType.NOTIFICATION,
+            note), command.getGameID());
+
+    gameService.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(),
+            gameData.blackUsername(), gameData.gameName(), chessGame));
 
     if (chessGame.isInCheckmate(chessGame.getTeamTurn())) {
       chessGame.resign(chessGame.getTeamTurn());

@@ -28,11 +28,21 @@ public class ChessIllustrator {
   private String[][] reverseBoard(String[][] board) {
     String[][] reversedBoard=new String[8][8];
     for (int i=0; i < 8; i++) {
-      reversedBoard[i]=board[7 - i];
-      reversedBoard[i]=reverseArray(reversedBoard[i]);
+      reversedBoard[i]=board[7 - i]; // Flip both rows and columns
     }
     return reversedBoard;
   }
+
+  private String[][] mirror(String[][] board) {
+    String[][] mirroredBoard=new String[8][8];
+    for (int i=0; i < 8; i++) {
+      for (int j=0; j < 8; j++) {
+        mirroredBoard[i][j]=board[7 - i][7 - j];
+      }
+    }
+    return mirroredBoard;
+  }
+
 
   private String center(String text, int width) {
     int padding=(width - text.length()) / 2;
@@ -206,8 +216,9 @@ public class ChessIllustrator {
 
   public void drawBoard(ChessGame game, boolean isWhiteView) {
     String[][] convertedBoard=convertBoard(game.getBoard().getBoard());
+    convertedBoard=reverseBoard(convertedBoard);
     if (!isWhiteView) {
-      convertedBoard=reverseBoard(convertedBoard);
+      convertedBoard=mirror(convertedBoard);
     }
     drawBoard(convertedBoard, isWhiteView, null);
   }
@@ -240,7 +251,7 @@ public class ChessIllustrator {
     if (piece == null) {
       return this.center(EMPTY, width);
     }
-    String[] symbols=piece.getTeamColor() == ChessGame.TeamColor.WHITE
+    String[] symbols=piece.getTeamColor() == ChessGame.TeamColor.BLACK
             ? new String[]{center(BLACK_PAWN, width), center(BLACK_ROOK, width),
             center(BLACK_KNIGHT, width), center(BLACK_KING, width), center(BLACK_QUEEN, width),
             center(BLACK_BISHOP, width)}
@@ -251,8 +262,10 @@ public class ChessIllustrator {
 
   public void drawBoard(ChessPiece[][] board, boolean isWhiteView, boolean[][] validMoves) {
     String[][] convertedBoard=convertBoard(board);
+    convertedBoard=reverseBoard(convertedBoard);
+
     if (!isWhiteView) {
-      convertedBoard=reverseBoard(convertedBoard);
+      convertedBoard=mirror(convertedBoard);
     }
     drawBoard(convertedBoard, isWhiteView, validMoves);
 

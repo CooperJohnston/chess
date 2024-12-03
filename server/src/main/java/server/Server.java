@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dataaccess.*;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import requests.CreateGameRequest;
@@ -147,6 +148,7 @@ public class Server {
     }
   }
 
+
   private Object createGame(Request req, Response res) throws DataAccessException {
     try {
       String auth=req.headers("Authorization");
@@ -252,4 +254,5 @@ public class Server {
   public void message(Session session, String message) throws Exception {
     webSocketHandler.onMessage(message, session);
   }
+
 }

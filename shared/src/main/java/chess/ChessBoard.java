@@ -88,6 +88,7 @@ public class ChessBoard {
         // Ensure the piece is not null before accessing its attributes
         if (piece != null) {
           builder.append(piece.toString());
+          builder.append(new ChessPosition(i, j).toString());
         }
       }
     }
