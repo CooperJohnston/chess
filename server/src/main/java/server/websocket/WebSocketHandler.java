@@ -88,7 +88,8 @@ public class WebSocketHandler {
 
       String participantString=getParticipantString(username, gameData);
 
-      Notification rootJoinedNotification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, username + " joined game as " + participantString);
+      Notification rootJoinedNotification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION,
+              username + " joined game as " + participantString);
       connectionManager.broadcast(username, rootJoinedNotification, gameID);
     } catch (DataAccessException e) {
       throw new ErrorException(500, e.getMessage());
@@ -119,7 +120,8 @@ public class WebSocketHandler {
 
       gameData.game().resign();
       gameService.updateGame(gameData);
-      Notification notification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION, rootClient + " resigned the game");
+      Notification notification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION,
+              rootClient + " resigned the game");
       connectionManager.broadcast("", notification, gameID);
     } catch (DataAccessException e) {
       throw new ErrorException(500, e.getMessage());
@@ -168,7 +170,8 @@ public class WebSocketHandler {
     }
   }
 
-  private void makeMove(String message, String rootClient) throws ErrorException, IOException, DataAccessException, InvalidMoveException {
+  private void makeMove(String message, String rootClient) throws ErrorException, IOException,
+          DataAccessException, InvalidMoveException {
 
     MakeMoveCommand cmd=new Gson().fromJson(message, MakeMoveCommand.class);
     GameData gameData=gameDAO.getGame(cmd.getGameID());
@@ -189,7 +192,8 @@ public class WebSocketHandler {
 
     game.makeMove(move);
 
-    GameData newGameData=new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+    GameData newGameData=new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(),
+            gameData.gameName(), game);
     gameService.updateGame(newGameData);
 
     LoadGameMessage loadMsg=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, newGameData.game());

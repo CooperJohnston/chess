@@ -148,19 +148,7 @@ public class DatabaseGameDAO implements GameDAO {
       throw new DataAccessException(e.getMessage());
     }
   }
-
-  public ChessGame getWinner(int id) throws DataAccessException {
-    ArrayList<GameData> games=getAllGames();
-    int i=1;
-    for (GameData game : games) {
-      if (i == id) {
-        return game.game();
-      }
-
-    }
-    return null;
-  }
-
+  
   @Override
   public void remove(int gameID) throws DataAccessException {
     var statement="DELETE FROM GameData WHERE gameID=?";

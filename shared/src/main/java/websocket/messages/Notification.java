@@ -12,7 +12,4 @@ public class Notification extends ServerMessage {
     return this.message;
   }
 
-  public String message() {
-    return this.message;
-  }
 }

@@ -16,15 +16,6 @@ public class ChessIllustrator {
     outStream=new PrintStream(System.out, true, StandardCharsets.UTF_8);
   }
 
-  public void beginGame() {
-    outStream.print(ERASE_SCREEN);
-    String[][] chessBoard=init();
-    drawBoard(reverseBoard(chessBoard), false, null);
-    outStream.println();
-    drawBoard(chessBoard, true, null);
-
-  }
-
   private String[][] reverseBoard(String[][] board) {
     String[][] reversedBoard=new String[8][8];
     for (int i=0; i < 8; i++) {

@@ -100,31 +100,6 @@ public class WebsocketFacade extends Endpoint {
     }
   }
 
-  private ChessPiece.PieceType pieceMap(String promotion) throws ResponseException {
-    switch (promotion.toLowerCase()) {
-      case "pawn" -> {
-        return ChessPiece.PieceType.PAWN;
-      }
-      case "rook" -> {
-        return ChessPiece.PieceType.ROOK;
-      }
-      case "knight" -> {
-        return ChessPiece.PieceType.KNIGHT;
-      }
-      case "bishop" -> {
-        return ChessPiece.PieceType.BISHOP;
-      }
-      case "queen" -> {
-        return ChessPiece.PieceType.QUEEN;
-      }
-      case "null" -> {
-        return null;
-      }
-      default -> throw new IllegalStateException("Unexpected value: " + promotion.toLowerCase());
-    }
-
-  }
-
 
 }
 

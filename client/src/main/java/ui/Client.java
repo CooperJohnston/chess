@@ -10,7 +10,6 @@ import exception.ResponseException;
 import model.GameData;
 import websocket.WebsocketFacade;
 
-
 import java.util.*;
 
 public class Client {
@@ -27,7 +26,6 @@ public class Client {
   private int gameId;
   private ArrayList<GameData> games;
   private final HashMap<String, ChessPosition> positionMap;
-
 
   public Client(String url, Repl repl) {
 
@@ -119,7 +117,6 @@ public class Client {
     chessIllustrator.drawBoard(game.getBoard().getBoard(), true, validMoves);
     return "Here are all the valid moves for this position :)";
   }
-
 
   public String create(String... params) throws ResponseException {
     try {
@@ -235,7 +232,6 @@ public class Client {
     }
     throw new ResponseException(400, "invalid ID");
   }
-
 
   public String list() throws ResponseException {
     try {
@@ -501,4 +497,3 @@ public class Client {
     return null;
   }
 }
-
