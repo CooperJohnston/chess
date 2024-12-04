@@ -2,7 +2,6 @@ package ui;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import ui.EscapeSequences.*;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
@@ -69,7 +68,6 @@ public class Repl implements ServerObserver {
 
   @Override
   public void notify(String message) {
-    System.out.println();
     ServerMessage note=new Gson().fromJson(message, ServerMessage.class);
     if (note.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
       System.out.println(new Gson().fromJson(message, Notification.class).getMesssage());
@@ -88,4 +86,3 @@ public class Repl implements ServerObserver {
     printPrompt();
   }
 }
-

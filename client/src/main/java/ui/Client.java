@@ -7,8 +7,8 @@ import chess.ChessPosition;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameData;
-import server.websocket.WebSocketHandler;
 import websocket.WebsocketFacade;
+
 
 import java.util.*;
 
@@ -77,7 +77,7 @@ public class Client {
     try {
       if (params.length != 1) {
         return "Make sure you provide a command formatted like this:\n" +
-                "show <start_postion>";
+                "show <start_position>";
       }
       ChessPosition start=assertCord(params[0]);
       ArrayList<GameData> gameData=serverFacade.list();
@@ -161,6 +161,7 @@ public class Client {
             websocketFacade=new WebsocketFacade(this.url, this.repl);
             websocketFacade.playGame(null, this.serverFacade.getAuthToken(), game.gameID());
             this.gameState=GameState.PLAYING;
+            this.gameId=game.gameID();
             return "";
           } catch (ResponseException e) {
             return e.getMessage();
@@ -299,7 +300,7 @@ public class Client {
 
       }
       if (piece.getTeamColor() != this.color) {
-        return "You cannot move that piece";
+        return "You cannot move that piece, you are not playing as that color";
       }
       try {
         websocketFacade.makeMove(start, end, promotion, serverFacade.getAuthToken(), game.gameID(), this.color);
@@ -446,8 +447,8 @@ public class Client {
     if (gameState != GameState.PLAYING) {
       return "You are not playing a game, so we can't draw it :)";
     }
-    ArrayList<GameData> gameData=serverFacade.list();
-    for (GameData gameData1 : gameData) {
+    this.games=serverFacade.list();
+    for (GameData gameData1 : games) {
       if (gameData1.gameID() == this.gameId) {
         if (this.color == ChessGame.TeamColor.BLACK) {
           printBlack(gameData1.game());

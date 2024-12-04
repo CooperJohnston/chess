@@ -5,19 +5,21 @@ import org.eclipse.jetty.websocket.api.Session;
 import java.io.IOException;
 
 public class Connection {
-  public String authToken;
+  public int gameID;
   public Session session;
+  public String username;
 
-  public Connection(String authToken, Session session) {
-    this.authToken=authToken;
+  public Connection(Integer gameID, Session session, String username) {
+    this.gameID=gameID;
     this.session=session;
+    this.username=username;
   }
 
   public void send(String msg) throws IOException {
     session.getRemote().sendString(msg);
   }
 
-  public String getAuthToken() {
-    return this.authToken;
+  public int getGameID() {
+    return this.gameID;
   }
 }

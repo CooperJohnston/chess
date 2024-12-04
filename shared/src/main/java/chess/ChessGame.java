@@ -14,6 +14,7 @@ public class ChessGame {
   TeamColor curr;
   private boolean enPassant=false;
   TeamColor winner=null;
+  private boolean gameOver=false;
 
   public ChessGame() {
     board.resetBoard();
@@ -205,6 +206,14 @@ public class ChessGame {
     temp.board.move(move);
     return !temp.isInCheck(team);
 
+  }
+
+  public void resign() {
+    gameOver=true;
+  }
+
+  public boolean isOver() {
+    return gameOver;
   }
 
   private boolean canPieceAttackKing(ChessPiece piece, ChessPosition currPos, ChessPosition kingPos, ChessBoard board) {

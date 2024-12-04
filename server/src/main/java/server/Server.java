@@ -3,9 +3,7 @@ package server;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dataaccess.*;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
-import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
 import requests.LoginRequest;
@@ -18,7 +16,7 @@ import service.GameService;
 import service.UserService;
 import spark.*;
 
-@WebSocket
+
 public class Server {
   private final UserService userService;
   UserDAO userDAO;
@@ -49,7 +47,7 @@ public class Server {
 
     Spark.staticFiles.location("web");
 
-    Spark.webSocket("/ws", Server.class);
+    Spark.webSocket("/ws", webSocketHandler);
 
     // Register your endpoints and handle exceptions here.
     Spark.delete("/db", this::clear);
@@ -250,9 +248,5 @@ public class Server {
     Spark.awaitStop();
   }
 
-  @OnWebSocketMessage
-  public void message(Session session, String message) throws Exception {
-    webSocketHandler.onMessage(message, session);
-  }
-
+ 
 }
