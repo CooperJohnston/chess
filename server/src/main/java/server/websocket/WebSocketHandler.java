@@ -180,6 +180,11 @@ public class WebSocketHandler {
     ChessGame game=gameData.game();
     ChessMove move=cmd.getMove();
 
+    if (game.isOver()) {
+      throw new ErrorException(500, "Game is over, can't move pieces");
+    }
+
+
     checkMove(gameData, rootClient, move);
 
     game.makeMove(move);
