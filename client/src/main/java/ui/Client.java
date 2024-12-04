@@ -177,7 +177,8 @@ public class Client {
               "\n :) Check your game ID is correct." +
               "\nHint: type 'list' to see available games. ");
     } else {
-      throw new ResponseException(400, "Expected: <your name> <password>");
+      throw new ResponseException(400, "Expected: Login first like this:" +
+              "\n <username> <password>");
     }
 
   }
@@ -200,9 +201,11 @@ public class Client {
     try {
       id=Integer.parseInt(params[0]);
     } catch (NumberFormatException e) {
-      throw new ResponseException(401, "input must be a valid from the directory");
+      throw new ResponseException(401, "input must be a valid index from the directory");
     }
-
+    if (this.games == null) {
+      return "Type list see available games. And join them :)";
+    }
     int i=1;
     for (var game : this.games) {
       if (i != id) {
