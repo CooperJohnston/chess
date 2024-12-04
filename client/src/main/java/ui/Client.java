@@ -125,7 +125,8 @@ public class Client {
         String gameName=params[0];
         serverFacade.create(gameName);
         int size=serverFacade.list().size();
-        return String.format("You created a game named %s! \n It is in the directory as game # %d! ", gameName, size);
+        return String.format("You created a game named %s! \n " +
+                "It is in the directory with %d other games. Type 'list' to find it :)", gameName, size - 1);
       }
     } catch (ResponseException e) {
       return "Sorry, that didn't work. Does this game already exist?";
@@ -154,7 +155,8 @@ public class Client {
       try {
         id=Integer.parseInt(params[0]);
       } catch (NumberFormatException e) {
-        throw new ResponseException(401, "input must be a valid index");
+        throw new ResponseException(401, "input must be a valid, available game index from the directory." +
+                "\n Hint: type 'list' to see available games. ");
       }
       int i=1;
       for (var game : this.games) {
@@ -171,7 +173,9 @@ public class Client {
         }
         i++;
       }
-      throw new ResponseException(400, "invalid ID");
+      throw new ResponseException(400, "We failed to find a Game with the ID you gave us. " +
+              "\n :) Check your game ID is correct." +
+              "\nHint: type 'list' to see available games. ");
     } else {
       throw new ResponseException(400, "Expected: <your name> <password>");
     }
@@ -196,7 +200,7 @@ public class Client {
     try {
       id=Integer.parseInt(params[0]);
     } catch (NumberFormatException e) {
-      throw new ResponseException(401, "input must be a valid index");
+      throw new ResponseException(401, "input must be a valid from the directory");
     }
 
     int i=1;
@@ -213,6 +217,12 @@ public class Client {
       if (!isWhite && !isBlack) {
         throw new ResponseException(400, "Invalid color. Choose BLACK or WHITE.");
       }
+
+      if (game.game().isOver()) {
+        throw new ResponseException(400, " This game is over, you can't join it." +
+                "\n" +
+                "Our janitor will clean it up after hours.");
+      }
       this.color=isWhite ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
       boolean isUserValid=(isWhite && username.equals(game.whiteUsername())) ||
               (isBlack && username.equals(game.blackUsername()));
@@ -221,16 +231,16 @@ public class Client {
         this.gameId=game.gameID();
         websocketFacade=new WebsocketFacade(this.url, this.repl);
         websocketFacade.playGame(color, this.serverFacade.getAuthToken(), game.gameID());
-        return "";
+        return "Welcome back!";
       }
       serverFacade.join(game.gameID(), color);
       this.gameState=GameState.PLAYING;
       websocketFacade=new WebsocketFacade(this.url, this.repl);
       websocketFacade.playGame(color, this.serverFacade.getAuthToken(), game.gameID());
       this.gameId=game.gameID();
-      return "";
+      return "Joining game :)";
     }
-    throw new ResponseException(400, "invalid ID");
+    throw new ResponseException(400, "That game cannot be joined right now :)");
   }
 
   public String list() throws ResponseException {
@@ -303,10 +313,10 @@ public class Client {
           case "BISHOP", "bishop", "b", "B" -> ChessPiece.PieceType.BISHOP;
           case "KNIGHT", "knight", "n", "N" -> ChessPiece.PieceType.KNIGHT;
           case "QUEEN", "queen", "q", "Q" -> ChessPiece.PieceType.QUEEN;
-          default -> throw new ResponseException(500, "Invalid promotion");
+          default -> throw new ResponseException(500, "That Promotion type don't quite work.");
         };
       } else {
-        throw new ResponseException(500, "can only promote pawns");
+        throw new ResponseException(500, " You can only promote pawns, silly.");
       }
 
     }
@@ -315,7 +325,7 @@ public class Client {
     WebsocketFacade ws=new WebsocketFacade(url, this.repl);
 
     ws.move(gameId, move, serverFacade.getAuthToken(), color);
-    return "Moving";
+    return "Attempting to move your piece :)";
   }
 
   private void initPositionMap() {
@@ -389,7 +399,7 @@ public class Client {
               
               - Redraw - Draws and refreshes the Chess Board.
               - Leave - Exits gameplay
-              - Move <Start> <End> - moves a piece from <Start> to <End>
+              - Move <Start> <End> (Optional: <Promotion_Type>) - moves a piece from <Start> to <End>
               - Resign - Surrender and end the game.
               - Show <Start> - Highlights all moves that can be taken at this location.
               """;
@@ -436,7 +446,6 @@ public class Client {
       return "couldn't leave the game";
     }
   }
-
 
   public void printWhite(ChessGame game) {
     chessIllustrator.drawBoard(game, true);

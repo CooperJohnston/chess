@@ -16,10 +16,11 @@ import service.UserService;
 import websocket.commands.JoinGameCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
-import websocket.messages.Error;
+import websocket.messages.ErrorMessage;
 
 import java.io.IOError;
 import java.io.IOException;
@@ -73,7 +74,7 @@ public class WebSocketHandler {
   }
 
   private void sendError(Session session, String errorMessage) throws IOException {
-    Error error=new Error(ServerMessage.ServerMessageType.ERROR, errorMessage);
+    ErrorMessage error=new ErrorMessage(errorMessage);
     session.getRemote().sendString(new Gson().toJson(error));
   }
 
@@ -112,10 +113,11 @@ public class WebSocketHandler {
       GameData gameData=gameDAO.getGame(gameID);
 
       if (!rootClient.equals(gameData.whiteUsername()) && !rootClient.equals(gameData.blackUsername())) {
-        throw new ErrorException(500, "Observers can't resign game");
+        throw new ErrorException(500, " Observers can't resign game, silly :)" + "\n" +
+                "That's like thinking you canceled a TV show by changing the channel.");
       }
       if (gameData.game().isOver()) {
-        throw new ErrorException(500, "Game is over, can't resign");
+        throw new ErrorException(500, " The game is over, you can't resign because you are not French :)");
       }
 
       gameData.game().resign();
@@ -177,14 +179,14 @@ public class WebSocketHandler {
     GameData gameData=gameDAO.getGame(cmd.getGameID());
 
     if (!rootClient.equals(gameData.whiteUsername()) && !rootClient.equals(gameData.blackUsername())) {
-      throw new ErrorException(500, "Observers can't move pieces");
+      throw new ErrorException(500, " Observers can't move pieces, silly!");
     }
 
     ChessGame game=gameData.game();
     ChessMove move=cmd.getMove();
 
     if (game.isOver()) {
-      throw new ErrorException(500, "Game is over, can't move pieces");
+      throw new ErrorException(500, " The game is over, you can't move pieces");
     }
 
 
@@ -199,7 +201,7 @@ public class WebSocketHandler {
     LoadGameMessage loadMsg=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, newGameData.game());
     connectionManager.broadcast("", loadMsg, gameData.gameID());
     Notification moveNotification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION,
-            rootClient + " moved ");
+            rootClient + " moved a piece!");
     connectionManager.broadcast(rootClient, moveNotification, gameData.gameID());
 
 
@@ -223,11 +225,11 @@ public class WebSocketHandler {
     }
 
     if (myColor == null) {
-      throw new ErrorException(500, "Can't move pieces when observing");
+      throw new ErrorException(500, "Can't move pieces when observing :)");
     }
     ChessPiece pieceToMove=game.getBoard().getPiece(move.getStartPosition());
     if (!myColor.equals(pieceToMove.getTeamColor())) {
-      throw new ErrorException(500, "Can't move opponent's piece");
+      throw new ErrorException(500, "Can't move opponent's piece, silly :)");
     }
   }
 

@@ -2,6 +2,7 @@ package ui;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
@@ -73,7 +74,7 @@ public class Repl implements ServerObserver {
     if (note.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
       System.out.println(new Gson().fromJson(message, Notification.class).getMesssage());
     } else if (note.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
-      System.out.println(new Gson().fromJson(message, Error.class).getMessage());
+      System.out.println(new Gson().fromJson(message, ErrorMessage.class).getErrorMessage());
     } else if (note.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
       var game=new Gson().fromJson(message, LoadGameMessage.class).getGame();
       if (this.client.color == ChessGame.TeamColor.BLACK) {
@@ -83,6 +84,11 @@ public class Repl implements ServerObserver {
       }
     } else {
       System.out.println(message);
+    }
+    String[] pieces=new String[]{BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, BLACK_KING, BLACK_KNIGHT, BLACK_PAWN,
+            BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, BLACK_KING, BLACK_KNIGHT, BLACK_PAWN};
+    for (String piece : pieces) {
+      System.out.print(piece);
     }
     printPrompt();
   }
