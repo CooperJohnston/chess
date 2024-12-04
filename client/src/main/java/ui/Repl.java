@@ -68,6 +68,7 @@ public class Repl implements ServerObserver {
 
   @Override
   public void notify(String message) {
+    System.out.println();
     ServerMessage note=new Gson().fromJson(message, ServerMessage.class);
     if (note.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
       System.out.println(new Gson().fromJson(message, Notification.class).getMesssage());

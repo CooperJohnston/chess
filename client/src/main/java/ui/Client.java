@@ -5,6 +5,7 @@ import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
+import exception.ErrorException;
 import exception.ResponseException;
 import model.GameData;
 import websocket.WebsocketFacade;
@@ -25,6 +26,8 @@ public class Client {
   private Repl repl;
   private int gameId;
   private ArrayList<GameData> games;
+  private final HashMap<String, ChessPosition> positionMap;
+
 
   public Client(String url, Repl repl) {
 
@@ -32,6 +35,8 @@ public class Client {
     this.chessIllustrator=new ChessIllustrator();
     this.url=url;
     this.repl=repl;
+    positionMap=new HashMap<>();
+    initPositionMap();
   }
 
   public String eval(String input) {
@@ -53,7 +58,7 @@ public class Client {
           case "redraw" -> redraw();
           case "resign" -> resign();
           case "show" -> listMoves(params);
-          case "move" -> makeMove(params);
+          case "move" -> move(params);
           default -> help();
         };
       } else {
@@ -68,7 +73,7 @@ public class Client {
         };
 
       }
-    } catch (ResponseException e) {
+    } catch (ResponseException | ErrorException e) {
       return e.getMessage();
     }
   }
@@ -270,47 +275,60 @@ public class Client {
 
   }
 
-  private String makeMove(String[] params) throws ResponseException {
+  public String move(String... params) throws ResponseException, ErrorException {
+    if (params.length < 2) {
+      return "Expected Usage: move <START> <END> (optional: <PROMOTION>)";
+    }
     checkAuth();
-    if (gameState != GameState.PLAYING) {
-      return "you are not playing a game";
+    String startString=params[0];
+    String endString=params[1];
+    ChessPiece.PieceType promotion=null;
+
+    ChessGame game=null;
+    games=serverFacade.list();
+    for (GameData gameData : games) {
+      if (gameData.gameID() == this.gameId) {
+        game=gameData.game();
+      }
     }
-    if (params.length != 2 && params.length != 3) {
-      return "format your command with <Start_Position> <End_Position>";
+    ChessPosition startPosition=positionMap.get(startString);
+    ChessPosition endPosition=positionMap.get(endString);
+
+    ChessPiece startPiece=game.getBoard().getPiece(startPosition);
+
+
+    //validate promotion
+
+
+    if (params.length == 3) {
+      if (startPiece.getPieceType().equals(ChessPiece.PieceType.PAWN)) {
+        promotion=switch (params[2]) {
+          case "ROOK", "rook", "r", "R" -> ChessPiece.PieceType.ROOK;
+          case "BISHOP", "bishop", "b", "B" -> ChessPiece.PieceType.BISHOP;
+          case "KNIGHT", "knight", "n", "N" -> ChessPiece.PieceType.KNIGHT;
+          case "QUEEN", "queen", "q", "Q" -> ChessPiece.PieceType.QUEEN;
+          default -> throw new ResponseException(500, "Invalid promotion");
+        };
+      } else {
+        throw new ResponseException(500, "can only promote pawns");
+      }
+
     }
-    try {
-      ChessPosition start=assertCord(params[0]);
-      ChessPosition end=assertCord(params[1]);
 
-      String promotion="null";
-      if (params.length == 3) {
-        promotion=params[2];
-      }
-      this.games=this.serverFacade.list();
-      GameData game=null;
-      for (var c : this.games) {
-        if (c.gameID() == this.gameId) {
-          game=c;
-        }
-      }
-      assert game != null;
-      ChessPiece piece=game.game().getBoard().getPiece(start);
-      if (piece == null) {
-        return "no piece to move";
+    ChessMove move=new ChessMove(startPosition, endPosition, promotion);
+    WebsocketFacade ws=new WebsocketFacade(url, this.repl);
 
-      }
-      if (piece.getTeamColor() != this.color) {
-        return "You cannot move that piece, you are not playing as that color";
-      }
-      try {
-        websocketFacade.makeMove(start, end, promotion, serverFacade.getAuthToken(), game.gameID(), this.color);
-        return "";
-      } catch (Exception e) {
-        throw new ResponseException(500, e.getMessage());
-      }
+    ws.move(gameId, move, serverFacade.getAuthToken(), color);
+    return "Moving";
+  }
 
-    } catch (Exception e) {
-      return e.getMessage();
+  private void initPositionMap() {
+    String[] letterArray={"a", "b", "c", "d", "e", "f", "g", "h"};
+    for (int i=0; i < 8; i++) {
+      for (int j=0; j < 8; j++) {
+        String positionString=String.format("%s%d", letterArray[j], i + 1);
+        positionMap.put(positionString, new ChessPosition(i + 1, j + 1));
+      }
     }
   }
 
@@ -331,16 +349,6 @@ public class Client {
     } catch (Exception e) {
       return "We couldn't resign your game.";
     }
-  }
-
-  ChessGame.TeamColor getColor(String color) throws ResponseException {
-    switch (color) {
-      case "BLACK":
-        return ChessGame.TeamColor.BLACK;
-      case "WHITE":
-        return ChessGame.TeamColor.WHITE;
-    }
-    throw new ResponseException(400, "Invalid color: " + color);
   }
 
   public String register(String... params) throws ResponseException {

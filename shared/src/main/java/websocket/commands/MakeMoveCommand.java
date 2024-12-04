@@ -4,21 +4,28 @@ import chess.ChessGame;
 import chess.ChessMove;
 
 public class MakeMoveCommand extends UserGameCommand {
-  ChessMove chessMove;
+  ChessMove move;
   ChessGame.TeamColor color;
 
 
-  public MakeMoveCommand(CommandType commandType, String authToken, Integer gameID, ChessMove move, ChessGame.TeamColor color) {
-    super(commandType, authToken, gameID);
-    this.chessMove=move;
-    this.color=color;
+  public MakeMoveCommand(String authToken, Integer gameID, ChessMove move) {
+    super(CommandType.MAKE_MOVE, authToken, gameID);
+    this.move=move;
   }
 
   public ChessMove getMove() {
-    return this.chessMove;
+    return this.move;
   }
 
   public ChessGame.TeamColor getColor() {
     return this.color;
+  }
+
+  @Override
+  public String toString() {
+    return "MakeMoveCommand{" +
+            "chessMove=" + move +
+            ", color=" + color +
+            '}';
   }
 }
