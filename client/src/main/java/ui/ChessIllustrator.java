@@ -41,64 +41,6 @@ public class ChessIllustrator {
     return String.format(format, "", text, "");
   }
 
-  private String[][] init() {
-    String[][] board=new String[8][8];
-    int width=5;
-
-    board[7]=new String[]{
-            center(WHITE_ROOK, width),
-            center(WHITE_KNIGHT, width),
-            center(WHITE_BISHOP, width),
-            center(WHITE_QUEEN, width),
-            center(WHITE_KING, width),
-            center(WHITE_BISHOP, width),
-            center(WHITE_KNIGHT, width),
-            center(WHITE_ROOK, width)
-    };
-
-    board[6]=new String[]{
-            center(WHITE_PAWN, width),
-            center(WHITE_PAWN, width),
-            center(WHITE_PAWN, width),
-            center(WHITE_PAWN, width),
-            center(WHITE_PAWN, width),
-            center(WHITE_PAWN, width),
-            center(WHITE_PAWN, width),
-            center(WHITE_PAWN, width)
-    };
-
-    for (int i=2; i < 6; i++) {
-      board[i]=new String[]{center(EMPTY, width), center(EMPTY, width),
-              center(EMPTY, width), center(EMPTY, width), center(EMPTY, width),
-              center(EMPTY, width), center(EMPTY, width), center(EMPTY, width)};
-    }
-
-    board[1]=new String[]{
-            center(BLACK_PAWN, width),
-            center(BLACK_PAWN, width),
-            center(BLACK_PAWN, width),
-            center(BLACK_PAWN, width),
-            center(BLACK_PAWN, width),
-            center(BLACK_PAWN, width),
-            center(BLACK_PAWN, width),
-            center(BLACK_PAWN, width)
-    };
-
-    board[0]=new String[]{
-            center(BLACK_ROOK, width),
-            center(BLACK_KNIGHT, width),
-            center(BLACK_BISHOP, width),
-            center(BLACK_QUEEN, width),
-            center(BLACK_KING, width),
-            center(BLACK_BISHOP, width),
-            center(BLACK_KNIGHT, width),
-            center(BLACK_ROOK, width)
-    };
-
-    return board;
-  }
-
-
   public void drawHeaders(boolean isWhiteView) {
     int width=5;
     String[] headers=new String[]{
