@@ -158,6 +158,10 @@ public class Client {
         throw new ResponseException(401, "input must be a valid, available game index from the directory." +
                 "\n Hint: type 'list' to see available games. ");
       }
+      if (this.games == null) {
+        return "Slow down there, you may want to list the games before you join blindly :)";
+      }
+
       int i=1;
       for (var game : this.games) {
         if (i == id) {
@@ -236,12 +240,16 @@ public class Client {
         websocketFacade.playGame(color, this.serverFacade.getAuthToken(), game.gameID());
         return "Welcome back!";
       }
-      serverFacade.join(game.gameID(), color);
-      this.gameState=GameState.PLAYING;
-      websocketFacade=new WebsocketFacade(this.url, this.repl);
-      websocketFacade.playGame(color, this.serverFacade.getAuthToken(), game.gameID());
-      this.gameId=game.gameID();
-      return "Joining game :)";
+      try {
+        serverFacade.join(game.gameID(), color);
+        this.gameState=GameState.PLAYING;
+        websocketFacade=new WebsocketFacade(this.url, this.repl);
+        websocketFacade.playGame(color, this.serverFacade.getAuthToken(), game.gameID());
+        this.gameId=game.gameID();
+        return "Joining game :)";
+      } catch (Exception e) {
+        return "Make sure that spot is available to join :)";
+      }
     }
     throw new ResponseException(400, "That game cannot be joined right now :)");
   }
@@ -305,8 +313,14 @@ public class Client {
 
     ChessPiece startPiece=game.getBoard().getPiece(startPosition);
 
+    if (startPiece == null) {
+      return "Check your coordinates, there is not a piece there";
+    }
 
     //validate promotion
+    if (startPiece.getTeamColor() != this.color) {
+      return "Not your color";
+    }
 
 
     if (params.length == 3) {
@@ -328,7 +342,8 @@ public class Client {
     WebsocketFacade ws=new WebsocketFacade(url, this.repl);
 
     ws.move(gameId, move, serverFacade.getAuthToken(), color);
-    return "Attempting to move your piece :)";
+    return "Attempting to move your piece :)"
+            + "\n" + move.movementString();
   }
 
   private void initPositionMap() {
@@ -405,6 +420,7 @@ public class Client {
               - Move <Start> <End> (Optional: <Promotion_Type>) - moves a piece from <Start> to <End>
               - Resign - Surrender and end the game.
               - Show <Start> - Highlights all moves that can be taken at this location.
+              - Help
               """;
     }
 
@@ -440,9 +456,9 @@ public class Client {
       if (gameState != GameState.PLAYING) {
         return "you are not playing a game";
       }
-      websocketFacade.leaveGame(serverFacade.getAuthToken(), this.gameId);
-      this.gameId-=1;
-      websocketFacade=null;
+      websocketFacade=new WebsocketFacade(url, repl);
+      websocketFacade.leaveGame(serverFacade.getAuthToken(), gameId);
+      this.gameId=0;
       gameState=GameState.NOTPLAYING;
       return "You have left the game";
     } catch (Exception e) {

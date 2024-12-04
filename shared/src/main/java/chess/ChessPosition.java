@@ -14,10 +14,10 @@ public class ChessPosition {
 
   @Override
   public String toString() {
-    return "{" +
-            row +
-            ", " + column +
-            '}';
+    return "(" +
+            letters[column - 1] +
+            +row +
+            ')';
   }
 
   @Override
@@ -60,4 +60,6 @@ public class ChessPosition {
   public ChessPosition copy() {
     return new ChessPosition(row, column);
   }
+
+  private char[] letters={'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',};
 }

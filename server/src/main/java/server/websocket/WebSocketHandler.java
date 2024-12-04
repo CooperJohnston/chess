@@ -117,7 +117,7 @@ public class WebSocketHandler {
                 "That's like thinking you canceled a TV show by changing the channel.");
       }
       if (gameData.game().isOver()) {
-        throw new ErrorException(500, " The game is over, you can't resign because you are not French :)");
+        throw new ErrorException(500, " The game is over, you can't resign again :)");
       }
 
       gameData.game().resign();
@@ -201,7 +201,7 @@ public class WebSocketHandler {
     LoadGameMessage loadMsg=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, newGameData.game());
     connectionManager.broadcast("", loadMsg, gameData.gameID());
     Notification moveNotification=new Notification(ServerMessage.ServerMessageType.NOTIFICATION,
-            rootClient + " moved a piece!");
+            rootClient + " moved " + move.movementString());
     connectionManager.broadcast(rootClient, moveNotification, gameData.gameID());
 
 
